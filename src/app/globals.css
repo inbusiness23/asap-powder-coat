@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f7f5f2;
+  --foreground: #18181b;
+  --lime: #c8f542;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-lime-accent px-7 py-3.5 text-base font-bold text-zinc-900 transition-colors hover:bg-lime-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-accent;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border-2 border-zinc-400 px-7 py-3.5 text-base font-semibold text-white transition-colors hover:border-white hover:bg-white/10;
+  }
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-6 py-3 font-semibold text-white transition-colors hover:bg-zinc-800;
+  }
+  .section-heading {
+    @apply text-3xl font-black tracking-tight text-zinc-900 md:text-4xl;
+  }
+  .label-cost {
+    @apply inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-sky-900;
+  }
+  .label-proposed {
+    @apply inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-900;
+  }
+}
