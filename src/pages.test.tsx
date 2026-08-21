@@ -101,6 +101,15 @@ describe("public pages do not offer Brian COST as a customer price", () => {
     const { metadata } = await import("@/app/pricing/page");
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
+
+  it("disallows /pricing in robots.txt", async () => {
+    const robots = (await import("@/app/robots")).default;
+    const manifest = robots();
+    expect(manifest.rules).toMatchObject({
+      userAgent: "*",
+      disallow: ["/pricing"],
+    });
+  });
 });
 
 describe("sourced ASAP brand", () => {

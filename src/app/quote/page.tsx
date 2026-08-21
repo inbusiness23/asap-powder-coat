@@ -37,7 +37,10 @@ export default function QuotePage() {
           <div className="rounded-xl border border-zinc-200 bg-white p-6">
             <h2 className="font-bold text-zinc-900">What happens next</h2>
             <ol className="mt-4 space-y-3 text-sm text-zinc-600">
-              <li>1. Your request is stored on this site (no CRM webhook).</li>
+              <li>
+                1. We try to save your request on this site. If that fails, you
+                will see an error — please call. There is no CRM webhook.
+              </li>
               <li>2. We review SKU, color, and size.</li>
               <li>
                 3. Official color vs example custom accent — we confirm before

@@ -98,6 +98,8 @@ export async function submitQuote(
   }
 
   try {
+    // Fail-closed local persist only. No GHL, no asapfenceandgate.com
+    // APIs, no FDT webhook — those were not publicly verified.
     const saved = await storeQuote({
       name,
       phone,

@@ -77,4 +77,4 @@ Do **not** put these numbers on `/`, `/hinges`, `/drop-rods`, `/handles`, `/fram
 
 ## Quote form
 
-`/quote` saves submissions with a server action to `data/quotes.json` only when that write is durable and can be read back. If the host cannot persist (typical on Vercel’s read-only filesystem), the form shows a failure and does **not** claim ASAP will follow up. There is no CRM or email webhook.
+`/quote` saves submissions with a server action to `data/quotes.json` only when that write is durable and can be read back. If the host cannot persist (typical on Vercel’s read-only filesystem), the form shows a failure (`ok: false`) and does **not** claim ASAP will follow up. There is no CRM, GoHighLevel, or email webhook. This app does **not** POST quotes to asapfenceandgate.com APIs or to any FDT GHL URL.

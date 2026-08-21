@@ -55,6 +55,10 @@ async function loadFromDisk(): Promise<QuoteSubmission[]> {
 /**
  * Store a quote only if it is written to disk and can be read back.
  * In-memory-only (typical on Vercel) is a failure, not a success.
+ *
+ * Do not invent a CRM/GHL webhook. Do not POST quotes to
+ * asapfenceandgate.com APIs, FDT GHL URLs, or /api/book/estimate.
+ * Those paths are not used here. Fail closed instead.
  */
 export async function storeQuote(
   input: Omit<QuoteSubmission, "id" | "createdAt">

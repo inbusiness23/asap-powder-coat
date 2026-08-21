@@ -96,4 +96,17 @@ describe("submitQuote hardening", () => {
       id: "abc-123",
     });
   });
+
+  it("does not POST quotes to GHL or asapfenceandgate.com APIs", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    storeQuoteMock.mockResolvedValue({
+      ...valid,
+      id: "abc-123",
+      createdAt: "2026-08-21T00:00:00.000Z",
+    });
+    await submitQuote(form(valid));
+    expect(fetchSpy).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
 });
