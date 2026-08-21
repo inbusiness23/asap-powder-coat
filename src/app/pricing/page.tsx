@@ -8,10 +8,14 @@ import {
   formatUsd,
   PRICE_LABEL,
   PROPOSED_RATES,
+  PROPOSED_SELL,
   SELL_POLICY,
 } from "@/lib/pricing";
 
-export const metadata: Metadata = { title: PAGE_H1.pricing };
+export const metadata: Metadata = {
+  title: PAGE_H1.pricing,
+  robots: { index: false, follow: false },
+};
 
 export default function PricingPage() {
   return (
@@ -84,8 +88,10 @@ export default function PricingPage() {
                 {formatUsd(PROPOSED_RATES.tier1GateAdderPerSqft.min)}–
                 {formatUsd(PROPOSED_RATES.tier1GateAdderPerSqft.max)}/sq ft gate
                 / +{formatUsd(PROPOSED_RATES.tier1LinealAdderPerLf.min)}–
-                {formatUsd(PROPOSED_RATES.tier1LinealAdderPerLf.max)}/lf;
-                color-lot {formatUsd(PROPOSED_RATES.colorLotDefault)} default.
+                {formatUsd(PROPOSED_RATES.tier1LinealAdderPerLf.max)}/lf.
+                Hardware color-lot Proposed SELL is{" "}
+                {formatUsd(PROPOSED_SELL.hardwareEach.colorLot)} on the
+                estimator menu below — not a leftover analog.
               </li>
               <li>
                 Recoat / rusty blast: +

@@ -3,9 +3,17 @@
 import { useState, type FormEvent } from "react";
 import { submitQuote, type QuoteActionState } from "@/app/quote/actions";
 import { COMPANY } from "@/lib/copy";
+import {
+  QUOTE_COLOR_OPTIONS,
+  QUOTE_FIELD_MAX,
+  QUOTE_SKU_OPTIONS,
+} from "@/lib/quote-options";
 
 const fieldClass =
   "w-full rounded-lg border border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 transition-colors focus:border-brand-lime focus:outline-none focus:ring-2 focus:ring-brand-lime/40";
+
+const SAVE_FAILED =
+  "We could not store this request. Please call us instead.";
 
 export default function QuoteForm() {
   const [state, setState] = useState<QuoteActionState>({ ok: false });
@@ -16,6 +24,8 @@ export default function QuoteForm() {
     try {
       const result = await submitQuote(formData);
       setState(result);
+    } catch {
+      setState({ ok: false, error: SAVE_FAILED });
     } finally {
       setPending(false);
     }
@@ -58,6 +68,7 @@ export default function QuoteForm() {
         <p
           className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800"
           role="alert"
+          data-testid="quote-error"
         >
           {state.error}
         </p>
@@ -74,6 +85,7 @@ export default function QuoteForm() {
           id="name"
           name="name"
           required
+          maxLength={QUOTE_FIELD_MAX.name}
           data-testid="quote-name"
           className={fieldClass}
           autoComplete="name"
@@ -93,6 +105,7 @@ export default function QuoteForm() {
             name="phone"
             type="tel"
             required
+            maxLength={QUOTE_FIELD_MAX.phone}
             data-testid="quote-phone"
             className={fieldClass}
             autoComplete="tel"
@@ -110,6 +123,7 @@ export default function QuoteForm() {
             name="email"
             type="email"
             required
+            maxLength={QUOTE_FIELD_MAX.email}
             data-testid="quote-email"
             className={fieldClass}
             autoComplete="email"
@@ -128,6 +142,7 @@ export default function QuoteForm() {
           id="address"
           name="address"
           required
+          maxLength={QUOTE_FIELD_MAX.address}
           data-testid="quote-address"
           className={fieldClass}
           autoComplete="street-address"
@@ -153,19 +168,11 @@ export default function QuoteForm() {
             <option value="" disabled>
               Select…
             </option>
-            <option value="handle">Handle (accent)</option>
-            <option value="hinge">Hinge (accent)</option>
-            <option value="drop-rod">Drop rod (accent)</option>
-            <option value="latch">Latch (accent)</option>
-            <option value="frame-accent">Frame accent</option>
-            <option value="PC-HW-LOT">PC-HW-LOT accent hardware lot</option>
-            <option value="PC-GATE-STK">
-              PC-GATE-STK full gate (quote path)
-            </option>
-            <option value="PC-LIN-STK">PC-LIN-STK lineal profile</option>
-            <option value="full-gate-custom">
-              Full gate custom color (quote path)
-            </option>
+            {QUOTE_SKU_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -186,15 +193,11 @@ export default function QuoteForm() {
             <option value="" disabled>
               Select…
             </option>
-            <option value="official-black">Official aluminum: black</option>
-            <option value="official-bronze">Official aluminum: bronze</option>
-            <option value="official-white">Official aluminum: white</option>
-            <option value="example-lime">
-              Lime — example custom accent, not stocked
-            </option>
-            <option value="other-custom">
-              Other custom accent — call to confirm
-            </option>
+            {QUOTE_COLOR_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -210,6 +213,7 @@ export default function QuoteForm() {
           <input
             id="quantity"
             name="quantity"
+            maxLength={QUOTE_FIELD_MAX.quantity}
             data-testid="quote-quantity"
             className={fieldClass}
             placeholder="e.g. 4 hinges"
@@ -225,6 +229,7 @@ export default function QuoteForm() {
           <input
             id="dimensions"
             name="dimensions"
+            maxLength={QUOTE_FIELD_MAX.dimensions}
             data-testid="quote-dimensions"
             className={fieldClass}
             placeholder="e.g. 4 ft W × 6 ft H leaf"

@@ -1,6 +1,13 @@
 "use server";
 
-import { storeQuote } from "@/lib/quotes";
+import { storeQuote, QuotePersistError } from "@/lib/quotes";
+import {
+  QUOTE_ALLOWED_KEYS,
+  QUOTE_COLORS,
+  QUOTE_FIELD_MAX,
+  QUOTE_MAX_PAYLOAD_CHARS,
+  QUOTE_SKUS,
+} from "@/lib/quote-options";
 
 export type QuoteActionState = {
   ok: boolean;
@@ -13,9 +20,38 @@ function read(formData: FormData, key: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function payloadCharCount(formData: FormData): number {
+  let total = 0;
+  Array.from(formData.values()).forEach((value) => {
+    if (typeof value === "string") total += value.length;
+    else total += value.size;
+  });
+  return total;
+}
+
+function isSku(value: string): value is (typeof QUOTE_SKUS)[number] {
+  return (QUOTE_SKUS as readonly string[]).includes(value);
+}
+
+function isColor(value: string): value is (typeof QUOTE_COLORS)[number] {
+  return (QUOTE_COLORS as readonly string[]).includes(value);
+}
+
 export async function submitQuote(
   formData: FormData
 ): Promise<QuoteActionState> {
+  if (payloadCharCount(formData) > QUOTE_MAX_PAYLOAD_CHARS) {
+    return { ok: false, error: "That request is too large. Please shorten it." };
+  }
+
+  if (
+    Array.from(formData.keys()).some(
+      (key) => !(QUOTE_ALLOWED_KEYS as readonly string[]).includes(key)
+    )
+  ) {
+    return { ok: false, error: "Unexpected field." };
+  }
+
   const name = read(formData, "name");
   const phone = read(formData, "phone");
   const email = read(formData, "email");
@@ -35,16 +71,49 @@ export async function submitQuote(
     return { ok: false, error: "Please add a quantity and/or dimensions." };
   }
 
-  const saved = await storeQuote({
-    name,
-    phone,
-    email,
-    address,
-    sku,
-    color,
-    quantity,
-    dimensions,
-  });
+  if (name.length > QUOTE_FIELD_MAX.name) {
+    return { ok: false, error: "Name is too long." };
+  }
+  if (phone.length > QUOTE_FIELD_MAX.phone) {
+    return { ok: false, error: "Phone is too long." };
+  }
+  if (email.length > QUOTE_FIELD_MAX.email) {
+    return { ok: false, error: "Email is too long." };
+  }
+  if (address.length > QUOTE_FIELD_MAX.address) {
+    return { ok: false, error: "Address is too long." };
+  }
+  if (quantity.length > QUOTE_FIELD_MAX.quantity) {
+    return { ok: false, error: "Quantity is too long." };
+  }
+  if (dimensions.length > QUOTE_FIELD_MAX.dimensions) {
+    return { ok: false, error: "Dimensions are too long." };
+  }
 
-  return { ok: true, id: saved.id };
+  if (!isSku(sku)) {
+    return { ok: false, error: "Please choose a SKU from the list." };
+  }
+  if (!isColor(color)) {
+    return { ok: false, error: "Please choose a color from the list." };
+  }
+
+  try {
+    const saved = await storeQuote({
+      name,
+      phone,
+      email,
+      address,
+      sku,
+      color,
+      quantity,
+      dimensions,
+    });
+    return { ok: true, id: saved.id };
+  } catch (error) {
+    const message =
+      error instanceof QuotePersistError
+        ? error.message
+        : "We could not store this request. Please call us instead.";
+    return { ok: false, error: message };
+  }
 }

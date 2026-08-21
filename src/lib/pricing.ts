@@ -41,19 +41,7 @@ export const PROPOSED_RATES = {
   tier1PercentBand: { min: 0.15, max: 0.35 },
   tier1GateAdderPerSqft: { min: 1.0, max: 2.5 },
   tier1LinealAdderPerLf: { min: 0.45, max: 1.05 },
-  colorLotDefault: 75,
-  colorLotBand: { min: 50, max: 150 },
   recoatBlastPerSqft: 3.5,
-  sameColorHardwareEach: 10,
-  hardwareLotSku: "PC-HW-LOT",
-  hardwareLotMid: 100,
-  hardwareLotBand: { min: 75, max: 125 },
-  hardwareStockEach: {
-    hinge: { min: 18, max: 45 },
-    dropRod: { min: 15, max: 40 },
-    handle: { min: 12, max: 35 },
-    latch: { min: 15, max: 40 },
-  },
   isCustomerPrice: false,
 } as const;
 
@@ -219,17 +207,6 @@ export function stockLinealCoatCost(
   };
 }
 
-export type ColorPath =
-  | "stock-hopper"
-  | "tier1-special"
-  | "custom-match"
-  | "candy"
-  | "two-tone";
-
-export function colorPathNeedsBrian(path: ColorPath): boolean {
-  return path === "custom-match" || path === "candy" || path === "two-tone";
-}
-
 export function proposedStockHopperAdder(): LabeledAmount {
   return proposedAdder(PROPOSED_RATES.stockHopperRalAdder);
 }
@@ -248,49 +225,6 @@ export function proposedRecoatBlast(sqft: number): LabeledAmount {
 
 export function proposedMillFinishBlast(): LabeledAmount {
   return vendorCost(FACT_RATES.millFinishBlastPerSqft);
-}
-
-export type LimeHardwareExample = {
-  label: typeof PRICE_LABEL.PROPOSED;
-  role: typeof PRICE_ROLE.PROPOSED_ADDER;
-  sku: typeof PROPOSED_RATES.hardwareLotSku;
-  gateStays: "black";
-  accentColor: "lime";
-  pieces: { hinges: 4; dropRods: 1; handles: 2 };
-  lotFee: number;
-  lotBand: { min: number; max: number };
-  unitPrices: { hinge: number; dropRod: number; handle: number };
-  approximateTotal: number;
-  isCustomerPrice: false;
-};
-
-/**
- * Staff-only merchandising analog (Proposed): 4 hinges + 1 drop + 2 handles lime,
- * gate stays black ≈ $320. Not Brian. Not a customer sell price.
- */
-export function proposedLimeHardwareExample(): LimeHardwareExample {
-  const unitPrices = { hinge: 35, dropRod: 30, handle: 25 };
-  const pieces = { hinges: 4, dropRods: 1, handles: 2 } as const;
-  const lotFee = PROPOSED_RATES.hardwareLotMid;
-  const approximateTotal =
-    pieces.hinges * unitPrices.hinge +
-    pieces.dropRods * unitPrices.dropRod +
-    pieces.handles * unitPrices.handle +
-    lotFee;
-
-  return {
-    label: PRICE_LABEL.PROPOSED,
-    role: PRICE_ROLE.PROPOSED_ADDER,
-    sku: PROPOSED_RATES.hardwareLotSku,
-    gateStays: "black",
-    accentColor: "lime",
-    pieces,
-    lotFee,
-    lotBand: PROPOSED_RATES.hardwareLotBand,
-    unitPrices,
-    approximateTotal,
-    isCustomerPrice: false,
-  };
 }
 
 export type StaffPackage =
@@ -518,153 +452,5 @@ export function estimateCostVsSell(input: {
     },
     sell: proposedOptionalStockGateSell(sqft),
     customerSellPrice,
-  };
-}
-
-export type EstimatorInput = {
-  kind: "gate" | "lineal";
-  widthFt: number;
-  heightFt: number;
-  linearFeet: number;
-  widestSideInches: number;
-  colorPath: ColorPath;
-  recoat: boolean;
-};
-
-export type EstimatorResult = {
-  callBrian: boolean;
-  callBrianReason?: string;
-  stockCoatCost?: LabeledAmount;
-  millFinishBlast?: LabeledAmount;
-  hopperAdder?: LabeledAmount;
-  tier1Adder?: LabeledAmount;
-  recoatBlast?: LabeledAmount;
-  vendorCostTotal?: LabeledAmount;
-  customerSellPrice: null;
-  proposedSell: ProposedSellPlaceholder;
-  notes: string[];
-};
-
-export function estimateStockJob(input: EstimatorInput): EstimatorResult {
-  const sellNote = SELL_POLICY;
-  const proposedSell = proposedSellPlaceholder();
-
-  if (colorPathNeedsBrian(input.colorPath)) {
-    return {
-      callBrian: true,
-      callBrianReason: "custom-match / candy / two-tone",
-      customerSellPrice: null,
-      proposedSell,
-      notes: [
-        "Custom match, candy, or two-tone on one weldment: call to confirm. Do not one-click. We do not publish Brian's fee.",
-        sellNote,
-        proposedSell.intent,
-      ],
-    };
-  }
-
-  if (input.kind === "lineal") {
-    const lineal = stockLinealCoatCost(
-      input.linearFeet,
-      input.widestSideInches
-    );
-    if (lineal.callBrian) {
-      return {
-        callBrian: true,
-        callBrianReason: "wide-profile",
-        customerSellPrice: null,
-        proposedSell,
-        notes: [
-          `Widest side over ${FACT_RATES.linealMaxWidestInches} in: ${CALL_BRIAN}.`,
-          sellNote,
-        ],
-      };
-    }
-
-    const hopperAdder = proposedStockHopperAdder();
-    const tier1Adder =
-      input.colorPath === "tier1-special"
-        ? proposedTier1SpecialOrderAdder(lineal.amount)
-        : undefined;
-    const notes = [
-      `COST (Brian) ${FACT_RATES.linealSku} at $${FACT_RATES.linealStockPerLf.toFixed(2)} / linear ft vendor cost — cut-list sticks, not assembled gates. Not a customer price.`,
-      sellNote,
-    ];
-    if (input.recoat) {
-      notes.push(
-        "Recoat blast is Proposed per square foot on gate envelopes. For lineal recoats, call Brian."
-      );
-      return {
-        callBrian: true,
-        callBrianReason: "lineal-recoat",
-        stockCoatCost: lineal,
-        customerSellPrice: null,
-        proposedSell,
-        notes,
-      };
-    }
-
-    const extra = (tier1Adder?.amount ?? 0) + hopperAdder.amount;
-    return {
-      callBrian: false,
-      stockCoatCost: lineal,
-      millFinishBlast: proposedMillFinishBlast(),
-      hopperAdder,
-      tier1Adder,
-      vendorCostTotal: {
-        amount: roundMoney(lineal.amount + extra),
-        label: extra > 0 ? PRICE_LABEL.PROPOSED : PRICE_LABEL.COST,
-        role:
-          extra > 0
-            ? PRICE_ROLE.PROPOSED_ADDER
-            : PRICE_ROLE.VENDOR_COST,
-        isCustomerPrice: false,
-      },
-      customerSellPrice: null,
-      proposedSell,
-      notes,
-    };
-  }
-
-  const sqft = envelopeSqft(input.widthFt, input.heightFt, "ft");
-  const stockCoatCost = stockGateCoatCost(sqft);
-  const millFinishBlast = proposedMillFinishBlast();
-  const hopperAdder = proposedStockHopperAdder();
-  const tier1Adder =
-    input.colorPath === "tier1-special"
-      ? proposedTier1SpecialOrderAdder(stockCoatCost.amount)
-      : undefined;
-  const recoatBlast = input.recoat ? proposedRecoatBlast(sqft) : undefined;
-
-  const extra =
-    hopperAdder.amount +
-    (tier1Adder?.amount ?? 0) +
-    (recoatBlast?.amount ?? 0);
-
-  const notes = [
-    `COST (Brian) ${FACT_RATES.gateSku} at $${FACT_RATES.gateStockPerSqft.toFixed(2)} / sq ft vendor cost. Envelope is W × H. Picket gaps are not subtracted. Both faces are not doubled. Not a customer price.`,
-    "New mill-finish blast is $0 assumed inside COST (FACT) until Brian says otherwise. ASAP does not operate a blast booth.",
-    sellNote,
-  ];
-
-  return {
-    callBrian: false,
-    stockCoatCost,
-    millFinishBlast,
-    hopperAdder,
-    tier1Adder,
-    recoatBlast,
-    vendorCostTotal: {
-      amount: roundMoney(
-        stockCoatCost.amount + millFinishBlast.amount + extra
-      ),
-      label: extra > 0 ? PRICE_LABEL.PROPOSED : PRICE_LABEL.COST,
-      role:
-        extra > 0 ? PRICE_ROLE.PROPOSED_ADDER : PRICE_ROLE.VENDOR_COST,
-      isCustomerPrice: false,
-    },
-    customerSellPrice: null,
-    proposedSell,
-    notes,
   };
 }

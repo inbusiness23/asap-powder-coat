@@ -14,20 +14,26 @@ export type QuoteSubmission = {
   dimensions: string;
 };
 
-const memoryStore: QuoteSubmission[] = [];
+export class QuotePersistError extends Error {
+  constructor(
+    message = "We could not store this request. Please call us instead."
+  ) {
+    super(message);
+    this.name = "QuotePersistError";
+  }
+}
 
 function quotesFilePath(): string {
-  return path.join(process.cwd(), "data", "quotes.json");
+  return (
+    process.env.QUOTES_FILE ??
+    path.join(process.cwd(), "data", "quotes.json")
+  );
 }
 
 async function persist(all: QuoteSubmission[]): Promise<void> {
-  try {
-    const file = quotesFilePath();
-    await mkdir(path.dirname(file), { recursive: true });
-    await writeFile(file, JSON.stringify(all, null, 2), "utf8");
-  } catch {
-    // Vercel / serverless filesystems may be read-only. In-memory is enough.
-  }
+  const file = quotesFilePath();
+  await mkdir(path.dirname(file), { recursive: true });
+  await writeFile(file, JSON.stringify(all, null, 2), "utf8");
 }
 
 async function loadFromDisk(): Promise<QuoteSubmission[]> {
@@ -35,24 +41,25 @@ async function loadFromDisk(): Promise<QuoteSubmission[]> {
     const raw = await readFile(quotesFilePath(), "utf8");
     const parsed = JSON.parse(raw) as QuoteSubmission[];
     if (Array.isArray(parsed)) return parsed;
-  } catch {
-    // first run or unreadable
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code: unknown }).code)
+        : "";
+    if (code === "ENOENT") return [];
+    throw new QuotePersistError();
   }
-  return [];
+  throw new QuotePersistError();
 }
 
+/**
+ * Store a quote only if it is written to disk and can be read back.
+ * In-memory-only (typical on Vercel) is a failure, not a success.
+ */
 export async function storeQuote(
   input: Omit<QuoteSubmission, "id" | "createdAt">
 ): Promise<QuoteSubmission> {
-  const fromDisk = await loadFromDisk();
-  const knownIds = new Set([
-    ...memoryStore.map((q) => q.id),
-    ...fromDisk.map((q) => q.id),
-  ]);
-  const merged = [
-    ...fromDisk.filter((q) => !memoryStore.some((m) => m.id === q.id)),
-    ...memoryStore,
-  ];
+  const existing = await loadFromDisk();
 
   const quote: QuoteSubmission = {
     ...input,
@@ -60,15 +67,18 @@ export async function storeQuote(
     createdAt: new Date().toISOString(),
   };
 
-  if (!knownIds.has(quote.id)) {
-    merged.push(quote);
-    memoryStore.push(quote);
+  const next = [...existing, quote];
+
+  try {
+    await persist(next);
+    const verified = await loadFromDisk();
+    if (!verified.some((row) => row.id === quote.id)) {
+      throw new QuotePersistError();
+    }
+  } catch (error) {
+    if (error instanceof QuotePersistError) throw error;
+    throw new QuotePersistError();
   }
 
-  await persist(merged);
   return quote;
-}
-
-export function listQuotesInMemory(): QuoteSubmission[] {
-  return [...memoryStore];
 }

@@ -93,6 +93,13 @@ describe("public pages do not offer Brian COST as a customer price", () => {
     expect(screen.getByTestId("estimator-sell-locked").textContent).toMatch(
       /Locked: false/i
     );
+    expect(text).not.toContain("$320");
+    expect(text).not.toMatch(/\$75(\.00)?/);
+  });
+
+  it("marks the staff pricing page noindex and nofollow", async () => {
+    const { metadata } = await import("@/app/pricing/page");
+    expect(metadata.robots).toEqual({ index: false, follow: false });
   });
 });
 
@@ -138,6 +145,8 @@ describe("sourced ASAP brand", () => {
     expect(text).not.toContain("941-555-1234");
     expect(text).not.toMatch(/\bCAT\b/);
     expect(text.toLowerCase()).not.toContain("catpowdercoat");
+    expect(text).not.toMatch(/Staff COST/i);
+    expect(container.querySelector('a[href="/pricing"]')).toBeNull();
   });
 
   for (const { name, Page } of publicLandings) {

@@ -3,13 +3,11 @@ import {
   CALL_BRIAN,
   envelopeSqft,
   estimateCostVsSell,
-  estimateStockJob,
   FACT_RATES,
   PRICE_LABEL,
   PRICE_ROLE,
   PROPOSED_SELL,
   proposedHardwareAccentSetSell,
-  proposedLimeHardwareExample,
   proposedMillFinishBlast,
   proposedOptionalStockGateSell,
   proposedRecoatBlast,
@@ -61,24 +59,19 @@ describe("FACT rates are vendor COST, not customer price", () => {
     });
   });
 
-  it("does not invent a customer sell price on the stock estimator", () => {
-    const result = estimateStockJob({
-      kind: "gate",
+  it("does not invent a customer sell price on the live COST vs SELL estimator", () => {
+    const result = estimateCostVsSell({
+      pack: "optional-stock-gate",
       widthFt: 4,
       heightFt: 6,
       linearFeet: 0,
       widestSideInches: 0,
-      colorPath: "stock-hopper",
-      recoat: false,
     });
     expect(result.customerSellPrice).toBeNull();
-    expect(result.proposedSell.display).toBe("Proposed");
-    expect(result.proposedSell.dollars).toBe("staff-menu");
-    expect(result.proposedSell.locked).toBe(false);
-    expect(result.vendorCostTotal?.amount).toBe(168);
-    expect(result.vendorCostTotal?.label).toBe(PRICE_LABEL.COST);
-    expect(result.vendorCostTotal?.isCustomerPrice).toBe(false);
-    expect(result.notes.join(" ")).toMatch(/Not a customer price/);
+    expect(result.cost.amount).toBe(168);
+    expect(result.cost.label).toBe(PRICE_LABEL.COST);
+    expect(result.sell.label).toBe(PRICE_LABEL.PROPOSED);
+    expect(result.sell.locked).toBe(false);
   });
 
   it("asks staff to call Brian for wide lineal profiles", () => {
@@ -89,7 +82,7 @@ describe("FACT rates are vendor COST, not customer price", () => {
     });
   });
 
-  it("labels hopper adder, tier-1, recoat blast, and hardware example as Proposed", () => {
+  it("labels hopper adder, tier-1, and recoat blast as Proposed COST adders", () => {
     expect(proposedStockHopperAdder().label).toBe(PRICE_LABEL.PROPOSED);
     expect(proposedStockHopperAdder().amount).toBe(0);
     expect(proposedStockHopperAdder().isCustomerPrice).toBe(false);
@@ -102,7 +95,6 @@ describe("FACT rates are vendor COST, not customer price", () => {
       amount: 35,
       label: PRICE_LABEL.PROPOSED,
     });
-    expect(proposedLimeHardwareExample().label).toBe(PRICE_LABEL.PROPOSED);
   });
 
   it("keeps mill-finish blast at $0 inside COST (FACT)", () => {
@@ -181,19 +173,5 @@ describe("proposed SELL menu (staff only, not locked)", () => {
       widestSideInches: 2,
     });
     expect(longer.sell.amount).toBe(540);
-  });
-});
-
-describe("hardware lot example", () => {
-  it("prices 4 hinges + 1 drop + 2 handles lime, gate stays black, at about $320 Proposed (not sell)", () => {
-    const example = proposedLimeHardwareExample();
-    expect(example.pieces).toEqual({ hinges: 4, dropRods: 1, handles: 2 });
-    expect(example.accentColor).toBe("lime");
-    expect(example.gateStays).toBe("black");
-    expect(example.sku).toBe("PC-HW-LOT");
-    expect(example.lotFee).toBe(100);
-    expect(example.approximateTotal).toBe(320);
-    expect(example.label).toBe(PRICE_LABEL.PROPOSED);
-    expect(example.isCustomerPrice).toBe(false);
   });
 });

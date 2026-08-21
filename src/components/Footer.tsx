@@ -68,14 +68,6 @@ export default function Footer() {
                   Main site · {COMPANY.mainSiteLabel}
                 </a>
               </li>
-              <li>
-                <Link
-                  href="/pricing"
-                  className="text-sm text-zinc-400 transition-colors hover:text-white"
-                >
-                  Staff COST estimator
-                </Link>
-              </li>
               <li className="text-sm text-zinc-400">
                 {COMPANY.googleReviews.rating} · {COMPANY.googleReviews.count}{" "}
                 Google Reviews
@@ -130,8 +122,7 @@ export default function Footer() {
             reserved.
           </p>
           <p className="text-xs text-zinc-600">
-            Customer coat pricing is quote-only. Staff COST figures are vendor
-            cost, not a public offer.
+            Customer coat pricing is quote-only.
           </p>
         </div>
       </div>

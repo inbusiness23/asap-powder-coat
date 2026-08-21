@@ -10,7 +10,6 @@ const navLinks = [
   { name: "Hinges", href: "/hinges" },
   { name: "Drop rods", href: "/drop-rods" },
   { name: "Frames", href: "/frames" },
-  { name: "Staff COST", href: "/pricing" },
 ];
 
 export default function Navigation() {

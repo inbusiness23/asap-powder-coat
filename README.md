@@ -44,11 +44,11 @@ Deploy: connect this GitHub repo to [Vercel](https://vercel.com). Leave `NEXT_PU
 
 Do **not** show $7 or $3 on public pages as a customer price, a “starting at” price, or an ad offer. Customer coat pricing is **quote-only** until the captain locks a sell multiplier. This repo does **not** invent that markup.
 
-**Everything else with a dollar sign is Proposed** (industry analog, not Brian, not a customer sell price). That includes stock-hopper $0 adder, tier-1 special-order adders, color-lot, recoat blast, hardware piece ranges, PC-HW-LOT, and the lime hardware example ≈ $320. Those belong on the staff `/pricing` page, labeled **Proposed**.
+**Everything else with a dollar sign is Proposed** (not Brian, not a customer sell price). Staff `/pricing` has one hardware SELL menu (below). Leftover analog numbers such as a $75 color-lot or a ≈ $320 lime hardware set are **not** in this repo — do not quote them.
 
 Custom / candy / two-tone: staff calls Brian to confirm. Do not invent Brian’s fee. Do not show a co-brand for the coating vendor on this storefront.
 
-Staff estimator: `/pricing` (clearly labeled internal). It can price stock gate/lineal **COST** without a phone call.
+Staff estimator: `/pricing` is an **unlisted** internal URL (not in the nav or footer, `noindex`). Bookmark it. It can price stock gate/lineal **COST** without a phone call.
 
 **Proposed SELL (staff `/pricing` only, not locked):**
 
@@ -77,4 +77,4 @@ Do **not** put these numbers on `/`, `/hinges`, `/drop-rods`, `/handles`, `/fram
 
 ## Quote form
 
-`/quote` saves submissions with a server action (local `data/quotes.json` when the disk is writable, otherwise in memory). There is no CRM webhook.
+`/quote` saves submissions with a server action to `data/quotes.json` only when that write is durable and can be read back. If the host cannot persist (typical on Vercel’s read-only filesystem), the form shows a failure and does **not** claim ASAP will follow up. There is no CRM or email webhook.
