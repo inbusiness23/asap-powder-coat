@@ -129,5 +129,5 @@ export async function submitQuote(
     };
   }
 
-  return { ok: true, id: delivered.id };
+  return delivered.id ? { ok: true, id: delivered.id } : { ok: true };
 }

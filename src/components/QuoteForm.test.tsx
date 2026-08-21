@@ -59,7 +59,7 @@ describe("QuoteForm persist honesty", () => {
   });
 
   it("claims follow-up only after persist succeeds", async () => {
-    submitQuoteMock.mockResolvedValue({ ok: true, id: "ok-1" });
+    submitQuoteMock.mockResolvedValue({ ok: true });
     render(<QuoteForm />);
     fillValid();
     fireEvent.submit(screen.getByTestId("quote-form"));
@@ -67,5 +67,16 @@ describe("QuoteForm persist honesty", () => {
       expect(screen.getByTestId("quote-success")).toBeInTheDocument();
     });
     expect(screen.getByText(/will follow up/i)).toBeInTheDocument();
+    expect(screen.queryByTestId("quote-reference")).toBeNull();
+  });
+
+  it("shows Reference only when the live API returned an id", async () => {
+    submitQuoteMock.mockResolvedValue({ ok: true, id: "lead-real-99" });
+    render(<QuoteForm />);
+    fillValid();
+    fireEvent.submit(screen.getByTestId("quote-form"));
+    expect(await screen.findByTestId("quote-reference")).toHaveTextContent(
+      "Reference lead-real-99"
+    );
   });
 });

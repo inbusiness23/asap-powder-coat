@@ -58,7 +58,7 @@ export type LeadContext = {
 };
 
 export type LeadDelivery =
-  | { ok: true; id: string; via: "lp-lead" | "contact" }
+  | { ok: true; id?: string; via: "lp-lead" | "contact" }
   | { ok: false };
 
 type FetchLike = (
@@ -74,6 +74,7 @@ type PostResult = {
   ok: boolean;
   status: number;
   networkError: boolean;
+  id?: string;
 };
 
 function assertAllowedUrl(url: string): void {
@@ -166,6 +167,28 @@ function isRetryableStatus(status: number): boolean {
   return status === 408 || status === 429 || status === 502 || status === 503 || status === 504;
 }
 
+function readReturnedId(text: string): string | undefined {
+  try {
+    const parsed = JSON.parse(text) as { id?: unknown };
+    if (typeof parsed?.id === "string" && parsed.id.trim()) {
+      return parsed.id.trim();
+    }
+    if (typeof parsed?.id === "number" && Number.isFinite(parsed.id)) {
+      return String(parsed.id);
+    }
+  } catch {
+    // Body is not JSON or has no id — omit rather than fabricate.
+  }
+  return undefined;
+}
+
+function delivered(
+  via: "lp-lead" | "contact",
+  id?: string
+): Extract<LeadDelivery, { ok: true }> {
+  return id ? { ok: true, id, via } : { ok: true, via };
+}
+
 async function postJson(
   fetchImpl: FetchLike,
   url: string,
@@ -178,10 +201,12 @@ async function postJson(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+    const text = await response.text();
     return {
       ok: response.ok,
       status: response.status,
       networkError: false,
+      id: response.ok ? readReturnedId(text) : undefined,
     };
   } catch {
     return { ok: false, status: 0, networkError: true };
@@ -223,7 +248,7 @@ export async function deliverPowderCoatLead(
     lpLeadBody(input, POWDER_COAT, ctx)
   );
   if (leadPowder.ok) {
-    return { ok: true, id: `lp-${Date.now()}`, via: "lp-lead" };
+    return delivered("lp-lead", leadPowder.id);
   }
 
   if (leadPowder.status >= 400 && leadPowder.status < 500 && !leadPowder.networkError) {
@@ -233,7 +258,7 @@ export async function deliverPowderCoatLead(
       lpLeadBody(input, LP_SOURCE_RETRY, ctx)
     );
     if (leadRetry.ok) {
-      return { ok: true, id: `lp-${Date.now()}`, via: "lp-lead" };
+      return delivered("lp-lead", leadRetry.id);
     }
   }
 
@@ -244,7 +269,7 @@ export async function deliverPowderCoatLead(
     contactBody(input, POWDER_COAT, message)
   );
   if (contactPowder.ok) {
-    return { ok: true, id: `contact-${Date.now()}`, via: "contact" };
+    return delivered("contact", contactPowder.id);
   }
 
   if (
@@ -262,7 +287,7 @@ export async function deliverPowderCoatLead(
       )
     );
     if (contactRetry.ok) {
-      return { ok: true, id: `contact-${Date.now()}`, via: "contact" };
+      return delivered("contact", contactRetry.id);
     }
   }
 

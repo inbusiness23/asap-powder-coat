@@ -88,12 +88,22 @@ describe("submitQuote hardening", () => {
   it("returns ok:true only after the locked lead path succeeds", async () => {
     deliverMock.mockResolvedValue({
       ok: true,
-      id: "lp-123",
       via: "lp-lead",
     });
     await expect(submitQuote(form(valid))).resolves.toEqual({
       ok: true,
-      id: "lp-123",
+    });
+  });
+
+  it("passes through a live API id and does not fabricate one", async () => {
+    deliverMock.mockResolvedValue({
+      ok: true,
+      id: "lead-real-99",
+      via: "lp-lead",
+    });
+    await expect(submitQuote(form(valid))).resolves.toEqual({
+      ok: true,
+      id: "lead-real-99",
     });
   });
 });

@@ -56,7 +56,12 @@ export default function QuoteForm() {
           .
         </p>
         {state.id ? (
-          <p className="mt-2 text-xs text-zinc-500">Reference {state.id}</p>
+          <p
+            className="mt-2 text-xs text-zinc-500"
+            data-testid="quote-reference"
+          >
+            Reference {state.id}
+          </p>
         ) : null}
       </div>
     );

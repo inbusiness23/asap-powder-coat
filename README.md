@@ -82,4 +82,4 @@ Do **not** put these numbers on `/`, `/hinges`, `/drop-rods`, `/handles`, `/fram
 1. `POST https://asapfenceandgate.com/api/lp/lead` with `service` / `service_type` / `lp_slug` = `powder-coat` and `source` = `powder-coat` (retry once with `source` `website-lp` if that value is rejected).
 2. Fallback: `POST https://asapfenceandgate.com/api/contact` with `source` `powder-coat`, then `website-contact-form` if needed.
 
-If both reject, the form shows a failure (`ok: false`) and does **not** claim ASAP will follow up. Local disk is not treated as a successful store. Do not invent extra API keys.
+If both reject, the form shows a failure (`ok: false`) and does **not** claim ASAP will follow up. There is no local `quotes.json` success path. A “Reference” id is shown only if the live API body returns an `id`. Do not invent extra API keys.

@@ -22,11 +22,11 @@ const input = {
   dimensions: "n/a",
 };
 
-function jsonResponse(status: number) {
+function jsonResponse(status: number, body = "{}") {
   return {
     ok: status >= 200 && status < 300,
     status,
-    text: async () => (status >= 200 && status < 300 ? "{}" : '{"error":"no"}'),
+    text: async () => body,
   };
 }
 
@@ -53,7 +53,10 @@ describe("deliverPowderCoatLead (mocked fetch only)", () => {
     fetchImpl.mockResolvedValue(jsonResponse(200));
     const result = await deliverPowderCoatLead(input, undefined, fetchImpl);
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.via).toBe("lp-lead");
+    if (result.ok) {
+      expect(result.via).toBe("lp-lead");
+      expect(result.id).toBeUndefined();
+    }
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     const [url, init] = fetchImpl.mock.calls[0] as [
       string,
@@ -178,6 +181,22 @@ describe("deliverPowderCoatLead (mocked fetch only)", () => {
       expect(url).not.toMatch(/GHL/i);
       expect(url).not.toContain("/api/book/estimate");
       expect(url).not.toContain("hoaapprovedfence");
+    });
+  });
+
+  it("omits id unless the live API body actually returns one", async () => {
+    fetchImpl.mockResolvedValueOnce(jsonResponse(200, "{}"));
+    const withoutId = await deliverPowderCoatLead(input, undefined, fetchImpl);
+    expect(withoutId.ok).toBe(true);
+    if (withoutId.ok) expect(withoutId.id).toBeUndefined();
+
+    fetchImpl.mockReset();
+    fetchImpl.mockResolvedValueOnce(jsonResponse(200, '{"id":"lead-real-99"}'));
+    const withId = await deliverPowderCoatLead(input, undefined, fetchImpl);
+    expect(withId).toMatchObject({
+      ok: true,
+      via: "lp-lead",
+      id: "lead-real-99",
     });
   });
 });
