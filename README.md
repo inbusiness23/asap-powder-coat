@@ -50,7 +50,17 @@ Custom / candy / two-tone: staff calls Brian to confirm. Do not invent Brian’s
 
 Staff estimator: `/pricing` (clearly labeled internal). It can price stock gate/lineal **COST** without a phone call.
 
-**Proposed sell (staff only):** until the captain locks a researched sell menu, sell is **Proposed — quote**. No invented markup dollars. Intent is premium / bespoke, not a cheap $7 customer price. That comparison lives on `/pricing`, not on the ad hero.
+**Proposed SELL (staff `/pricing` only, not locked):**
+
+| Package | Proposed SELL |
+| --- | --- |
+| Hardware accent set (4 hinges + drop + 2 handles, custom color) | **$695** (floor $495) |
+| Frame accent | **$18 / lf**, min **$350** (floor $12 / lf, min $250) |
+| Full gate custom color | **$22 / sq ft**, min **$1,250 / leaf** (floor $16, min $850) — discourage; quote path |
+| Hardware each | hinge $60, drop $55, handle $45, latch $45, color lot $150 |
+| Optional stock (if shown) | gate **$14 / sq ft**, lineal **$12 / lf** |
+
+Do **not** put these numbers on `/`, `/hinges`, `/drop-rods`, `/handles`, `/frames`, or `/quote`. They are not locked.
 
 ## Brand (sourced)
 

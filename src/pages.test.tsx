@@ -51,6 +51,12 @@ describe("public pages do not offer Brian COST as a customer price", () => {
       const text = pageText(Page);
       expect(text).not.toMatch(/\$7(\.00)?/);
       expect(text).not.toMatch(/\$3(\.00|\.50)?/);
+      expect(text).not.toMatch(/\$695/);
+      expect(text).not.toMatch(/\$14(\.00)?/);
+      expect(text).not.toMatch(/\$22(\.00)?/);
+      expect(text).not.toMatch(/\$18(\.00)?/);
+      expect(text).not.toMatch(/\$1,?250/);
+      expect(text).not.toMatch(/\$12(\.00)?\s*\/\s*lf/i);
       expect(text).not.toMatch(/starting at/i);
       expect(text.toLowerCase()).not.toContain("per sq ft");
       expect(text.toLowerCase()).not.toContain("per square foot");
@@ -70,15 +76,23 @@ describe("public pages do not offer Brian COST as a customer price", () => {
     expect(text).toContain("$3.00");
     expect(text).toMatch(/vendor cost/i);
     expect(text).not.toMatch(/starting at \$7/i);
-    expect(screen.getByTestId("estimator-sell-price").textContent).toMatch(
-      /Proposed — quote/i
+    expect(screen.getByTestId("estimator-sell-price").textContent).toContain(
+      "$695.00"
+    );
+    expect(screen.getByTestId("estimator-cost-total").textContent).toMatch(
+      /No locked Brian COST/i
     );
     expect(screen.getByTestId("cost-vs-sell")).toBeInTheDocument();
     expect(screen.getByTestId("proposed-sell-display").textContent).toBe(
-      "Proposed — quote"
+      "Proposed"
     );
+    expect(text).toContain("$695.00");
+    expect(text).toContain("$14.00");
     expect(text.toLowerCase()).toMatch(/premium/);
     expect(text).not.toMatch(/starting at \$7/i);
+    expect(screen.getByTestId("estimator-sell-locked").textContent).toMatch(
+      /Locked: false/i
+    );
   });
 });
 

@@ -2,12 +2,16 @@ import { describe, expect, it } from "vitest";
 import {
   CALL_BRIAN,
   envelopeSqft,
+  estimateCostVsSell,
   estimateStockJob,
   FACT_RATES,
   PRICE_LABEL,
   PRICE_ROLE,
+  PROPOSED_SELL,
+  proposedHardwareAccentSetSell,
   proposedLimeHardwareExample,
   proposedMillFinishBlast,
+  proposedOptionalStockGateSell,
   proposedRecoatBlast,
   proposedSellPlaceholder,
   proposedStockHopperAdder,
@@ -68,8 +72,8 @@ describe("FACT rates are vendor COST, not customer price", () => {
       recoat: false,
     });
     expect(result.customerSellPrice).toBeNull();
-    expect(result.proposedSell.display).toBe("Proposed — quote");
-    expect(result.proposedSell.dollars).toBeNull();
+    expect(result.proposedSell.display).toBe("Proposed");
+    expect(result.proposedSell.dollars).toBe("staff-menu");
     expect(result.proposedSell.locked).toBe(false);
     expect(result.vendorCostTotal?.amount).toBe(168);
     expect(result.vendorCostTotal?.label).toBe(PRICE_LABEL.COST);
@@ -110,16 +114,73 @@ describe("FACT rates are vendor COST, not customer price", () => {
   });
 });
 
-describe("proposed sell placeholder", () => {
-  it("does not invent sell dollars until the captain locks a formula", () => {
+describe("proposed SELL menu (staff only, not locked)", () => {
+  it("keeps the staff sell menu Proposed and unlocked", () => {
     const sell = proposedSellPlaceholder();
-    expect(sell.display).toBe("Proposed — quote");
-    expect(sell.dollars).toBeNull();
+    expect(sell.display).toBe("Proposed");
+    expect(sell.dollars).toBe("staff-menu");
     expect(sell.label).toBe(PRICE_LABEL.PROPOSED);
     expect(sell.isCustomerPrice).toBe(false);
     expect(sell.locked).toBe(false);
     expect(sell.intent.toLowerCase()).toMatch(/premium/);
     expect(sell.intent.toLowerCase()).toMatch(/bespoke/);
+  });
+
+  it("prices the hardware accent set at Proposed $695 with floor $495", () => {
+    const line = proposedHardwareAccentSetSell();
+    expect(line.amount).toBe(695);
+    expect(line.floor).toBe(495);
+    expect(line.label).toBe(PRICE_LABEL.PROPOSED);
+    expect(line.locked).toBe(false);
+    expect(line.isCustomerPrice).toBe(false);
+    expect(PROPOSED_SELL.hardwareEach).toEqual({
+      hinge: 60,
+      dropRod: 55,
+      handle: 45,
+      latch: 45,
+      colorLot: 150,
+    });
+  });
+
+  it("applies full-gate custom min $1,250 and optional stock $14 / sq ft", () => {
+    const custom = estimateCostVsSell({
+      pack: "full-gate-custom",
+      widthFt: 4,
+      heightFt: 6,
+      linearFeet: 0,
+      widestSideInches: 0,
+    });
+    expect(custom.cost.amount).toBe(168);
+    expect(custom.cost.label).toBe(PRICE_LABEL.COST);
+    expect(custom.sell.amount).toBe(1250);
+    expect(custom.sell.discourage).toBe(true);
+    expect(custom.sell.locked).toBe(false);
+    expect(custom.customerSellPrice).toBeNull();
+
+    const stock = proposedOptionalStockGateSell(24);
+    expect(stock.amount).toBe(336);
+    expect(stock.label).toBe(PRICE_LABEL.PROPOSED);
+  });
+
+  it("applies frame accent $18 / lf with a $350 minimum", () => {
+    const short = estimateCostVsSell({
+      pack: "frame-accent",
+      widthFt: 0,
+      heightFt: 0,
+      linearFeet: 10,
+      widestSideInches: 2,
+    });
+    expect(short.cost.amount).toBe(30);
+    expect(short.sell.amount).toBe(350);
+
+    const longer = estimateCostVsSell({
+      pack: "frame-accent",
+      widthFt: 0,
+      heightFt: 0,
+      linearFeet: 30,
+      widestSideInches: 2,
+    });
+    expect(longer.sell.amount).toBe(540);
   });
 });
 

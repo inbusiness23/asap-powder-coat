@@ -2,41 +2,61 @@
 
 import { useMemo, useState } from "react";
 import {
-  CALL_BRIAN,
-  estimateStockJob,
+  estimateCostVsSell,
   FACT_RATES,
   formatUsd,
   PRICE_LABEL,
-  PROPOSED_RATES,
-  proposedLimeHardwareExample,
-  SELL_POLICY,
-  type ColorPath,
+  PROPOSED_SELL,
+  type StaffPackage,
 } from "@/lib/pricing";
 
+const PACKAGES: { id: StaffPackage; label: string; needs: "gate" | "lineal" | "none" }[] =
+  [
+    {
+      id: "hardware-accent-set",
+      label: "Hardware accent set (4 hinges + drop + 2 handles)",
+      needs: "none",
+    },
+    { id: "frame-accent", label: "Frame accent", needs: "lineal" },
+    {
+      id: "full-gate-custom",
+      label: "Full gate custom color (discourage — quote path)",
+      needs: "gate",
+    },
+    {
+      id: "optional-stock-gate",
+      label: "Optional stock gate (Proposed)",
+      needs: "gate",
+    },
+    {
+      id: "optional-stock-lineal",
+      label: "Optional stock lineal (Proposed)",
+      needs: "lineal",
+    },
+  ];
+
 export default function EstimatorCard() {
-  const [kind, setKind] = useState<"gate" | "lineal">("gate");
+  const [pack, setPack] = useState<StaffPackage>("hardware-accent-set");
   const [widthFt, setWidthFt] = useState("4");
   const [heightFt, setHeightFt] = useState("6");
   const [linearFeet, setLinearFeet] = useState("20");
   const [widest, setWidest] = useState("2");
-  const [colorPath, setColorPath] = useState<ColorPath>("stock-hopper");
-  const [recoat, setRecoat] = useState(false);
+
+  const needs = PACKAGES.find((p) => p.id === pack)?.needs ?? "none";
 
   const result = useMemo(
     () =>
-      estimateStockJob({
-        kind,
+      estimateCostVsSell({
+        pack,
         widthFt: Number(widthFt) || 0,
         heightFt: Number(heightFt) || 0,
         linearFeet: Number(linearFeet) || 0,
         widestSideInches: Number(widest) || 0,
-        colorPath,
-        recoat,
       }),
-    [kind, widthFt, heightFt, linearFeet, widest, colorPath, recoat]
+    [pack, widthFt, heightFt, linearFeet, widest]
   );
 
-  const example = proposedLimeHardwareExample();
+  const each = PROPOSED_SELL.hardwareEach;
 
   return (
     <div
@@ -45,44 +65,37 @@ export default function EstimatorCard() {
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="label-cost">COST</span>
+        <span className="text-zinc-400">vs</span>
+        <span className="label-proposed">Proposed</span>
         <h2 className="text-xl font-bold text-zinc-900">
-          Staff estimator — Brian vendor cost, not sell
+          Staff estimator — COST vs proposed SELL
         </h2>
       </div>
       <p className="mt-2 text-sm text-zinc-600">
-        Use this card to price <strong>stock</strong> gate / lineal{" "}
-        <strong>COST</strong> without a phone call. Figures are ASAP&apos;s
-        vendor cost from Brian. They are not customer prices, starting-at
-        prices, or ad offers. {SELL_POLICY}
+        Left column is Brian FACT <strong>COST</strong> ($7 / sq ft gates, $3 /
+        lf lineal ≤ 3.5 in). Right column is <strong>Proposed SELL</strong> —
+        not locked, not for ads. Public pages stay quote-only.
       </p>
 
       <fieldset className="mt-5">
-        <legend className="text-sm font-semibold text-zinc-700">Job type</legend>
-        <div className="mt-2 flex gap-3">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="kind"
-              checked={kind === "gate"}
-              onChange={() => setKind("gate")}
-              data-testid="estimator-kind-gate"
-            />
-            Gate leaf ({FACT_RATES.gateSku})
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="kind"
-              checked={kind === "lineal"}
-              onChange={() => setKind("lineal")}
-              data-testid="estimator-kind-lineal"
-            />
-            Lineal profile ({FACT_RATES.linealSku})
-          </label>
+        <legend className="text-sm font-semibold text-zinc-700">Package</legend>
+        <div className="mt-2 grid gap-2">
+          {PACKAGES.map((item) => (
+            <label key={item.id} className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="pack"
+                checked={pack === item.id}
+                onChange={() => setPack(item.id)}
+                data-testid={`estimator-pack-${item.id}`}
+              />
+              {item.label}
+            </label>
+          ))}
         </div>
       </fieldset>
 
-      {kind === "gate" ? (
+      {needs === "gate" ? (
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="widthFt" className="text-sm font-medium">
@@ -115,7 +128,9 @@ export default function EstimatorCard() {
             />
           </div>
         </div>
-      ) : (
+      ) : null}
+
+      {needs === "lineal" ? (
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="linearFeet" className="text-sm font-medium">
@@ -148,166 +163,72 @@ export default function EstimatorCard() {
             />
           </div>
         </div>
-      )}
+      ) : null}
 
-      <div className="mt-4">
-        <label htmlFor="colorPath" className="text-sm font-medium">
-          Color path
-        </label>
-        <select
-          id="colorPath"
-          data-testid="estimator-color-path"
-          value={colorPath}
-          onChange={(e) => setColorPath(e.target.value as ColorPath)}
-          className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm"
-        >
-          <option value="stock-hopper">Stock hopper color (Proposed $0 adder)</option>
-          <option value="tier1-special">Tier 1 special-order solid (Proposed)</option>
-          <option value="custom-match">Custom / candy / two-tone — call Brian</option>
-          <option value="candy">Candy — call Brian</option>
-          <option value="two-tone">Two-tone — call Brian</option>
-        </select>
-      </div>
-
-      <label className="mt-3 flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={recoat}
-          onChange={(e) => setRecoat(e.target.checked)}
-          data-testid="estimator-recoat"
-        />
-        Recoat / rusty (Proposed blast adder on gate envelopes)
-      </label>
-
-      <div className="mt-6 rounded-xl bg-zinc-50 p-4" data-testid="estimator-result">
-        {result.callBrian ? (
-          <div>
-            <p className="text-lg font-bold text-zinc-900">
-              {CALL_BRIAN}
-              {result.callBrianReason ? (
-                <span className="ml-2 text-sm font-normal text-zinc-600">
-                  ({result.callBrianReason})
-                </span>
-              ) : null}
+      <div
+        className="mt-6 grid gap-4 sm:grid-cols-2"
+        data-testid="estimator-result"
+      >
+        <div className="rounded-xl border border-sky-200 bg-sky-50 p-4">
+          <p className="label-cost">{PRICE_LABEL.COST}</p>
+          <p className="mt-2 text-xs uppercase tracking-wide text-zinc-500">
+            Brian FACT
+          </p>
+          <p
+            className="mt-1 text-2xl font-bold text-zinc-900"
+            data-testid="estimator-cost-total"
+          >
+            {result.cost.display}
+          </p>
+          <p className="mt-2 text-xs text-zinc-600">{result.cost.detail}</p>
+        </div>
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="label-proposed">{result.sell.label}</p>
+          <p className="mt-2 text-xs uppercase tracking-wide text-zinc-500">
+            Proposed SELL — not locked
+          </p>
+          <p
+            className="mt-1 text-2xl font-bold text-zinc-900"
+            data-testid="estimator-sell-price"
+          >
+            {result.sell.display}
+          </p>
+          {result.sell.floor != null ? (
+            <p className="text-xs text-zinc-600">
+              Floor {formatUsd(result.sell.floor)}
             </p>
-            <p className="mt-2 text-sm text-zinc-700">
-              Proposed sell:{" "}
-              <span data-testid="estimator-sell-price">
-                {result.proposedSell.display}
-              </span>
+          ) : null}
+          <p className="mt-2 text-xs text-zinc-600">{result.sell.detail}</p>
+          {result.sell.discourage ? (
+            <p className="mt-2 text-xs font-semibold text-amber-900">
+              Discourage full-gate custom — quote path, not one-click.
             </p>
-          </div>
-        ) : (
-          <dl className="space-y-2 text-sm">
-            {result.stockCoatCost ? (
-              <div className="flex justify-between gap-4">
-                <dt>
-                  Stock coat COST{" "}
-                  <span className="label-cost">{result.stockCoatCost.label}</span>
-                </dt>
-                <dd className="font-semibold">
-                  {formatUsd(result.stockCoatCost.amount)}
-                </dd>
-              </div>
-            ) : null}
-            {result.millFinishBlast ? (
-              <div className="flex justify-between gap-4">
-                <dt>
-                  Mill-finish blast{" "}
-                  <span className="label-cost">{result.millFinishBlast.label}</span>
-                </dt>
-                <dd>{formatUsd(result.millFinishBlast.amount)}</dd>
-              </div>
-            ) : null}
-            {result.hopperAdder ? (
-              <div className="flex justify-between gap-4">
-                <dt>
-                  Stock hopper adder{" "}
-                  <span className="label-proposed">
-                    {result.hopperAdder.label}
-                  </span>
-                </dt>
-                <dd>{formatUsd(result.hopperAdder.amount)}</dd>
-              </div>
-            ) : null}
-            {result.tier1Adder ? (
-              <div className="flex justify-between gap-4">
-                <dt>
-                  Tier 1 special-order adder{" "}
-                  <span className="label-proposed">{result.tier1Adder.label}</span>
-                </dt>
-                <dd>{formatUsd(result.tier1Adder.amount)}</dd>
-              </div>
-            ) : null}
-            {result.recoatBlast ? (
-              <div className="flex justify-between gap-4">
-                <dt>
-                  Recoat blast{" "}
-                  <span className="label-proposed">{result.recoatBlast.label}</span>
-                </dt>
-                <dd>{formatUsd(result.recoatBlast.amount)}</dd>
-              </div>
-            ) : null}
-            {result.vendorCostTotal ? (
-              <div className="flex justify-between gap-4 border-t border-zinc-200 pt-2 text-base">
-                <dt className="font-bold">
-                  Vendor COST total{" "}
-                  <span
-                    className={
-                      result.vendorCostTotal.label === PRICE_LABEL.COST
-                        ? "label-cost"
-                        : "label-proposed"
-                    }
-                  >
-                    {result.vendorCostTotal.label}
-                  </span>
-                </dt>
-                <dd className="font-bold" data-testid="estimator-cost-total">
-                  {formatUsd(result.vendorCostTotal.amount)}
-                </dd>
-              </div>
-            ) : null}
-            <div className="flex justify-between gap-4 text-zinc-700">
-              <dt>
-                Proposed sell{" "}
-                <span className="label-proposed">
-                  {result.proposedSell.label}
-                </span>
-              </dt>
-              <dd data-testid="estimator-sell-price">
-                {result.proposedSell.display}
-              </dd>
-            </div>
-          </dl>
-        )}
-        <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-zinc-600">
-          {result.notes.map((note) => (
-            <li key={note}>{note}</li>
-          ))}
-        </ul>
+          ) : null}
+        </div>
       </div>
-
-      <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
-        <p className="text-sm font-bold text-zinc-900">
-          Accent hardware analog{" "}
-          <span className="label-proposed">{example.label}</span>
-        </p>
-        <p className="mt-1 text-sm text-zinc-700">
-          {example.pieces.hinges} hinges + {example.pieces.dropRods} drop rod +{" "}
-          {example.pieces.handles} handles lime, gate stays {example.gateStays}{" "}
-          ≈ {formatUsd(example.approximateTotal)} ({example.sku} lot mid{" "}
-          {formatUsd(example.lotFee)}). Industry analog — not Brian, not a
-          customer sell price.
-        </p>
-      </div>
-
-      <p className="mt-4 text-xs text-zinc-500">
-        Color-lot Proposed default {formatUsd(PROPOSED_RATES.colorLotDefault)}{" "}
-        (band {formatUsd(PROPOSED_RATES.colorLotBand.min)}–
-        {formatUsd(PROPOSED_RATES.colorLotBand.max)}). Same-color hardware on
-        the same hang: Proposed {formatUsd(PROPOSED_RATES.sameColorHardwareEach)}{" "}
-        each. Wide-profile, custom, candy, match: {CALL_BRIAN}.
+      <p className="mt-3 text-xs text-zinc-500" data-testid="estimator-sell-locked">
+        Locked: {String(result.sell.locked)}. Customer sell as fact: no.
+        {FACT_RATES.gateSku} COST {formatUsd(FACT_RATES.gateStockPerSqft)} / sq
+        ft · {FACT_RATES.linealSku} COST {formatUsd(FACT_RATES.linealStockPerLf)}{" "}
+        / lf.
       </p>
+
+      <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm">
+        <p className="font-bold text-zinc-900">
+          Hardware each{" "}
+          <span className="label-proposed">{PRICE_LABEL.PROPOSED}</span>
+        </p>
+        <ul className="mt-2 grid gap-1 text-zinc-700 sm:grid-cols-2">
+          <li>Hinge {formatUsd(each.hinge)}</li>
+          <li>Drop rod {formatUsd(each.dropRod)}</li>
+          <li>Handle {formatUsd(each.handle)}</li>
+          <li>Latch {formatUsd(each.latch)}</li>
+          <li>Color lot {formatUsd(each.colorLot)}</li>
+        </ul>
+        <p className="mt-2 text-xs text-zinc-500">
+          A-la-carte Proposed SELL, not locked, not Brian COST.
+        </p>
+      </div>
     </div>
   );
 }
