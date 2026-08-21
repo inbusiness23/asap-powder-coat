@@ -34,6 +34,13 @@ function fillValid() {
 }
 
 describe("QuoteForm persist honesty", () => {
+  it("includes a hidden honeypot field", () => {
+    render(<QuoteForm />);
+    const pot = screen.getByTestId("quote-honeypot");
+    expect(pot).toHaveAttribute("name", "website");
+    expect(pot).toHaveAttribute("tabindex", "-1");
+  });
+
   it("shows a visible failure when submitQuote throws", async () => {
     submitQuoteMock.mockRejectedValue(new Error("network"));
     render(<QuoteForm />);

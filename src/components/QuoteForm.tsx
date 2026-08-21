@@ -6,6 +6,7 @@ import { COMPANY } from "@/lib/copy";
 import {
   QUOTE_COLOR_OPTIONS,
   QUOTE_FIELD_MAX,
+  QUOTE_HONEYPOT_KEY,
   QUOTE_SKU_OPTIONS,
 } from "@/lib/quote-options";
 
@@ -68,7 +69,11 @@ export default function QuoteForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" data-testid="quote-form">
+    <form
+      onSubmit={handleSubmit}
+      className="relative space-y-5"
+      data-testid="quote-form"
+    >
       {state.error ? (
         <p
           className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800"
@@ -78,6 +83,21 @@ export default function QuoteForm() {
           {state.error}
         </p>
       ) : null}
+
+      <div
+        className="absolute -left-[10000px] h-0 w-0 overflow-hidden opacity-0"
+        aria-hidden="true"
+      >
+        <label htmlFor="quote-website">Website</label>
+        <input
+          id="quote-website"
+          name={QUOTE_HONEYPOT_KEY}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          data-testid="quote-honeypot"
+        />
+      </div>
 
       <div>
         <label

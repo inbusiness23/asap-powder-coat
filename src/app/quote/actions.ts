@@ -1,14 +1,20 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { deliverPowderCoatLead } from "@/lib/asap-lead";
 import {
   QUOTE_ALLOWED_KEYS,
   QUOTE_COLORS,
   QUOTE_FIELD_MAX,
+  QUOTE_HONEYPOT_KEY,
   QUOTE_MAX_PAYLOAD_CHARS,
   QUOTE_SKUS,
 } from "@/lib/quote-options";
+import {
+  QUOTE_GUARD_FAIL,
+  QUOTE_SESSION_COOKIE,
+  checkQuoteGuard,
+} from "@/lib/quote-guard";
 
 export type QuoteActionState = {
   ok: boolean;
@@ -36,6 +42,40 @@ function isSku(value: string): value is (typeof QUOTE_SKUS)[number] {
 
 function isColor(value: string): value is (typeof QUOTE_COLORS)[number] {
   return (QUOTE_COLORS as readonly string[]).includes(value);
+}
+
+function clientIp(): string {
+  try {
+    const h = headers();
+    const forwarded = h.get("x-forwarded-for") || "";
+    const first = forwarded.split(",")[0]?.trim();
+    return first || h.get("x-real-ip") || h.get("cf-connecting-ip") || "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+function readSessionStamp(): number | null {
+  try {
+    const raw = cookies().get(QUOTE_SESSION_COOKIE)?.value;
+    const stamp = raw ? Number(raw) : NaN;
+    return Number.isFinite(stamp) ? stamp : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSessionStamp(stamp: number): void {
+  try {
+    cookies().set(QUOTE_SESSION_COOKIE, String(stamp), {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60,
+    });
+  } catch {
+    // No request scope (unit tests).
+  }
 }
 
 function requestContext(): {
@@ -80,6 +120,7 @@ export async function submitQuote(
   const color = read(formData, "color");
   const quantity = read(formData, "quantity");
   const dimensions = read(formData, "dimensions");
+  const honeypot = read(formData, QUOTE_HONEYPOT_KEY);
 
   if (!name || !phone || !email || !address || !sku || !color) {
     return {
@@ -117,6 +158,16 @@ export async function submitQuote(
     return { ok: false, error: "Please choose a color from the list." };
   }
 
+  const guard = checkQuoteGuard({
+    honeypot,
+    ip: clientIp(),
+    sessionStamp: readSessionStamp(),
+  });
+  if (!guard.ok) {
+    return { ok: false, error: QUOTE_GUARD_FAIL };
+  }
+  writeSessionStamp(guard.nextSessionStamp);
+
   const delivered = await deliverPowderCoatLead(
     { name, phone, email, address, sku, color, quantity, dimensions },
     requestContext()
@@ -125,7 +176,7 @@ export async function submitQuote(
   if (!delivered.ok) {
     return {
       ok: false,
-      error: "We could not store this request. Please call us instead.",
+      error: QUOTE_GUARD_FAIL,
     };
   }
 

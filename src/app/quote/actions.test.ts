@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deliverPowderCoatLead } from "@/lib/asap-lead";
 import { submitQuote } from "@/app/quote/actions";
-import { QUOTE_FIELD_MAX, QUOTE_MAX_PAYLOAD_CHARS } from "@/lib/quote-options";
+import {
+  QUOTE_FIELD_MAX,
+  QUOTE_HONEYPOT_KEY,
+  QUOTE_MAX_PAYLOAD_CHARS,
+} from "@/lib/quote-options";
+import { QUOTE_THROTTLE, resetQuoteThrottleForTests } from "@/lib/quote-guard";
 
 vi.mock("@/lib/asap-lead", async () => {
   const actual = await vi.importActual<typeof import("@/lib/asap-lead")>(
@@ -37,6 +42,7 @@ const valid = {
 describe("submitQuote hardening", () => {
   beforeEach(() => {
     deliverMock.mockReset();
+    resetQuoteThrottleForTests();
   });
 
   it("rejects unknown sku and color", async () => {
@@ -105,5 +111,27 @@ describe("submitQuote hardening", () => {
       ok: true,
       id: "lead-real-99",
     });
+  });
+
+  it("fails closed on a filled honeypot and does not POST the live lead API", async () => {
+    const result = await submitQuote(
+      form({ ...valid, [QUOTE_HONEYPOT_KEY]: "http://spam.example" })
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/could not store/i),
+    });
+    expect(deliverMock).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the coarse IP throttle trips and does not POST", async () => {
+    deliverMock.mockResolvedValue({ ok: true, via: "lp-lead" });
+    for (let i = 0; i < QUOTE_THROTTLE.ipMax; i += 1) {
+      await expect(submitQuote(form(valid))).resolves.toEqual({ ok: true });
+    }
+    const blocked = await submitQuote(form(valid));
+    expect(blocked.ok).toBe(false);
+    expect(blocked.error).toMatch(/could not store/i);
+    expect(deliverMock).toHaveBeenCalledTimes(QUOTE_THROTTLE.ipMax);
   });
 });

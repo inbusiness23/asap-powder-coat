@@ -48,7 +48,11 @@ export const QUOTE_ALLOWED_KEYS = [
   "color",
   "quantity",
   "dimensions",
+  "website",
 ] as const;
+
+/** Hidden honeypot. Real customers leave this empty. Never sent to ASAP. */
+export const QUOTE_HONEYPOT_KEY = "website" as const;
 
 export const QUOTE_MAX_PAYLOAD_CHARS = 1600;
 
