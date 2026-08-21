@@ -14,6 +14,7 @@ import {
   QUOTE_GUARD_FAIL,
   QUOTE_SESSION_COOKIE,
   checkQuoteGuard,
+  clientIpFromHeaders,
 } from "@/lib/quote-guard";
 
 export type QuoteActionState = {
@@ -46,10 +47,7 @@ function isColor(value: string): value is (typeof QUOTE_COLORS)[number] {
 
 function clientIp(): string {
   try {
-    const h = headers();
-    const forwarded = h.get("x-forwarded-for") || "";
-    const first = forwarded.split(",")[0]?.trim();
-    return first || h.get("x-real-ip") || h.get("cf-connecting-ip") || "unknown";
+    return clientIpFromHeaders(headers());
   } catch {
     return "unknown";
   }

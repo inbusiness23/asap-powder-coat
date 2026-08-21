@@ -84,4 +84,4 @@ Do **not** put these numbers on `/`, `/hinges`, `/drop-rods`, `/handles`, `/fram
 
 If both reject, the form shows a failure (`ok: false`) and does **not** claim ASAP will follow up. There is no local `quotes.json` success path. A “Reference” id is shown only if the live API body returns an `id`. Do not invent extra API keys.
 
-Unauthenticated `/quote` uses a hidden honeypot plus a coarse IP/session throttle before any live POST. If the honeypot is filled or the throttle trips, the form fails closed and does not call `api/lp/lead`. Paid ads should not run until this guard is in.
+Unauthenticated `/quote` uses a hidden honeypot plus a coarse IP/session throttle before any live POST. If the honeypot is filled or the throttle trips, the form fails closed and does not call `api/lp/lead`. The IP key prefers `x-real-ip` / `cf-connecting-ip` / the rightmost `X-Forwarded-For` hop (not the spoofable leftmost hop). The in-memory hit counter is per server process, so each Vercel isolate has its own 3/15min bucket. Paid ads should not run until this guard is in.

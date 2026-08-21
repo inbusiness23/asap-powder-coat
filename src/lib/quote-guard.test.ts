@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   QUOTE_THROTTLE,
   checkQuoteGuard,
+  clientIpFromHeaders,
   resetQuoteThrottleForTests,
 } from "@/lib/quote-guard";
 
@@ -85,5 +86,91 @@ describe("quote guard", () => {
         now,
       }).ok
     ).toBe(true);
+  });
+});
+
+describe("clientIpFromHeaders", () => {
+  function headers(map: Record<string, string>) {
+    return {
+      get(name: string) {
+        return map[name.toLowerCase()] ?? null;
+      },
+    };
+  }
+
+  it("prefers x-real-ip over a spoofed leftmost X-Forwarded-For hop", () => {
+    expect(
+      clientIpFromHeaders(
+        headers({
+          "x-forwarded-for": "203.0.113.1, 10.0.0.1",
+          "x-real-ip": "198.51.100.20",
+        })
+      )
+    ).toBe("198.51.100.20");
+  });
+
+  it("uses cf-connecting-ip when x-real-ip is missing", () => {
+    expect(
+      clientIpFromHeaders(
+        headers({
+          "x-forwarded-for": "203.0.113.9, 10.0.0.1",
+          "cf-connecting-ip": "198.51.100.30",
+        })
+      )
+    ).toBe("198.51.100.30");
+  });
+
+  it("uses the rightmost X-Forwarded-For hop, not the leftmost spoofable hop", () => {
+    expect(
+      clientIpFromHeaders(
+        headers({
+          "x-forwarded-for": "203.0.113.1, 203.0.113.2, 198.51.100.40",
+        })
+      )
+    ).toBe("198.51.100.40");
+  });
+
+  it("still keys the same IP when a caller rotates the leftmost XFF hop", () => {
+    const connecting = "198.51.100.40";
+    const first = clientIpFromHeaders(
+      headers({ "x-forwarded-for": `203.0.113.11, ${connecting}` })
+    );
+    const second = clientIpFromHeaders(
+      headers({ "x-forwarded-for": `203.0.113.99, ${connecting}` })
+    );
+    expect(first).toBe(connecting);
+    expect(second).toBe(connecting);
+  });
+
+  it("does not give a fresh throttle bucket when leftmost XFF rotates", () => {
+    const now = 50_000;
+    for (let i = 0; i < QUOTE_THROTTLE.ipMax; i += 1) {
+      const ip = clientIpFromHeaders(
+        headers({
+          "x-forwarded-for": `203.0.113.${i}, 198.51.100.40`,
+        })
+      );
+      expect(
+        checkQuoteGuard({
+          honeypot: "",
+          ip,
+          sessionStamp: null,
+          now: now + i,
+        }).ok
+      ).toBe(true);
+    }
+    const ip = clientIpFromHeaders(
+      headers({
+        "x-forwarded-for": "203.0.113.200, 198.51.100.40",
+      })
+    );
+    expect(
+      checkQuoteGuard({
+        honeypot: "",
+        ip,
+        sessionStamp: null,
+        now: now + 10,
+      })
+    ).toEqual({ ok: false });
   });
 });

@@ -20,6 +20,40 @@ export function resetQuoteThrottleForTests(): void {
   ipHits.clear();
 }
 
+type HeaderReader = {
+  get(name: string): string | null | undefined;
+};
+
+function lastForwardedHop(value: string): string {
+  const parts = value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length ? parts[parts.length - 1] : "";
+}
+
+/**
+ * Platform-trusted client IP for coarse throttling.
+ * Prefer Vercel/Cloudflare connecting-IP headers. If only X-Forwarded-For
+ * is present, use the rightmost hop (the one the platform set). Do not use
+ * the leftmost hop — callers can spoof it.
+ */
+export function clientIpFromHeaders(h: HeaderReader): string {
+  const real = h.get("x-real-ip")?.trim();
+  if (real) return lastForwardedHop(real);
+
+  const cf = h.get("cf-connecting-ip")?.trim();
+  if (cf) return lastForwardedHop(cf);
+
+  const vercelFwd = h.get("x-vercel-forwarded-for")?.trim();
+  if (vercelFwd) return lastForwardedHop(vercelFwd);
+
+  const forwarded = h.get("x-forwarded-for")?.trim();
+  if (forwarded) return lastForwardedHop(forwarded);
+
+  return "unknown";
+}
+
 export type QuoteGuardInput = {
   honeypot: string;
   ip: string;
