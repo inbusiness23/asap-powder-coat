@@ -1,0 +1,137 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { deliverPowderCoatLead } from "@/lib/asap-lead";
+import { submitQuote } from "@/app/quote/actions";
+import {
+  QUOTE_FIELD_MAX,
+  QUOTE_HONEYPOT_KEY,
+  QUOTE_MAX_PAYLOAD_CHARS,
+} from "@/lib/quote-options";
+import { QUOTE_THROTTLE, resetQuoteThrottleForTests } from "@/lib/quote-guard";
+
+vi.mock("@/lib/asap-lead", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/asap-lead")>(
+    "@/lib/asap-lead"
+  );
+  return {
+    ...actual,
+    deliverPowderCoatLead: vi.fn(),
+  };
+});
+
+const deliverMock = vi.mocked(deliverPowderCoatLead);
+
+function form(fields: Record<string, string>): FormData {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(fields)) {
+    data.set(key, value);
+  }
+  return data;
+}
+
+const valid = {
+  name: "Ada",
+  phone: "9414178992",
+  email: "ada@example.com",
+  address: "2219 63rd Avenue East",
+  sku: "handle",
+  color: "official-black",
+  quantity: "2",
+  dimensions: "",
+};
+
+describe("submitQuote hardening", () => {
+  beforeEach(() => {
+    deliverMock.mockReset();
+    resetQuoteThrottleForTests();
+  });
+
+  it("rejects unknown sku and color", async () => {
+    await expect(
+      submitQuote(form({ ...valid, sku: "not-a-sku" }))
+    ).resolves.toMatchObject({ ok: false, error: expect.stringMatching(/SKU/i) });
+    await expect(
+      submitQuote(form({ ...valid, color: "hot-pink" }))
+    ).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/color/i),
+    });
+    expect(deliverMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects oversized fields and payloads", async () => {
+    const longName = "A".repeat(QUOTE_FIELD_MAX.name + 1);
+    await expect(
+      submitQuote(form({ ...valid, name: longName }))
+    ).resolves.toMatchObject({ ok: false, error: expect.stringMatching(/too long/i) });
+
+    const huge = "B".repeat(QUOTE_MAX_PAYLOAD_CHARS + 1);
+    await expect(
+      submitQuote(form({ ...valid, dimensions: huge }))
+    ).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/too large/i),
+    });
+    expect(deliverMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects unexpected fields", async () => {
+    const data = form(valid);
+    data.set("extra", "nope");
+    await expect(submitQuote(data)).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/Unexpected/i),
+    });
+  });
+
+  it("returns ok:false when both locked ASAP endpoints reject", async () => {
+    deliverMock.mockResolvedValue({ ok: false });
+    const result = await submitQuote(form(valid));
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/could not store/i);
+    expect(result.id).toBeUndefined();
+  });
+
+  it("returns ok:true only after the locked lead path succeeds", async () => {
+    deliverMock.mockResolvedValue({
+      ok: true,
+      via: "lp-lead",
+    });
+    await expect(submitQuote(form(valid))).resolves.toEqual({
+      ok: true,
+    });
+  });
+
+  it("passes through a live API id and does not fabricate one", async () => {
+    deliverMock.mockResolvedValue({
+      ok: true,
+      id: "lead-real-99",
+      via: "lp-lead",
+    });
+    await expect(submitQuote(form(valid))).resolves.toEqual({
+      ok: true,
+      id: "lead-real-99",
+    });
+  });
+
+  it("fails closed on a filled honeypot and does not POST the live lead API", async () => {
+    const result = await submitQuote(
+      form({ ...valid, [QUOTE_HONEYPOT_KEY]: "http://spam.example" })
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/could not store/i),
+    });
+    expect(deliverMock).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the coarse IP throttle trips and does not POST", async () => {
+    deliverMock.mockResolvedValue({ ok: true, via: "lp-lead" });
+    for (let i = 0; i < QUOTE_THROTTLE.ipMax; i += 1) {
+      await expect(submitQuote(form(valid))).resolves.toEqual({ ok: true });
+    }
+    const blocked = await submitQuote(form(valid));
+    expect(blocked.ok).toBe(false);
+    expect(blocked.error).toMatch(/could not store/i);
+    expect(deliverMock).toHaveBeenCalledTimes(QUOTE_THROTTLE.ipMax);
+  });
+});
