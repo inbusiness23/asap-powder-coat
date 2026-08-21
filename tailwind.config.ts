@@ -9,8 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        lime: {
-          accent: "#C8F542",
+        brand: {
+          dark: "#171D24",
+          lime: "#C8F542",
         },
       },
     },

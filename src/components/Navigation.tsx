@@ -18,15 +18,18 @@ export default function Navigation() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white shadow-sm">
-      <div className="bg-zinc-950 text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-sm">
+      <div className="bg-brand-dark text-white">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm">
           <span className="hidden text-zinc-400 sm:block">
-            {COMPANY.name} · Licensed GC #{COMPANY.license} · Powder coat /
-            color finish only
+            Licensed GC #{COMPANY.license} · {COMPANY.hours}
+          </span>
+          <span className="text-zinc-300">
+            {COMPANY.googleReviews.rating} · {COMPANY.googleReviews.count} Google
+            Reviews
           </span>
           <a
             href={`tel:${COMPANY.phoneTel}`}
-            className="ml-auto flex items-center gap-2 font-semibold hover:text-lime-accent"
+            className="ml-auto flex items-center gap-2 font-semibold hover:text-brand-lime"
           >
             <Phone size={14} />
             {COMPANY.phoneDisplay}
@@ -38,15 +41,15 @@ export default function Navigation() {
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="flex-shrink-0">
             <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-zinc-900 px-2.5 py-1.5 text-sm font-black leading-none text-lime-accent">
+              <div className="rounded-lg bg-brand-dark px-2.5 py-1.5 text-sm font-black leading-none text-brand-lime">
                 ASAP
               </div>
               <div className="hidden sm:block">
-                <div className="text-sm font-bold leading-tight text-zinc-900">
-                  Powder coat
+                <div className="text-sm font-bold leading-tight text-brand-dark">
+                  {COMPANY.wordmark}
                 </div>
                 <div className="text-[10px] leading-tight text-zinc-500">
-                  Color finish · {COMPANY.shortName}
+                  Powder coat / color finish
                 </div>
               </div>
             </div>
@@ -57,7 +60,7 @@ export default function Navigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-brand-dark"
               >
                 {link.name}
               </Link>
@@ -65,7 +68,10 @@ export default function Navigation() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/quote" className="btn-primary hidden py-2.5 text-sm sm:inline-flex">
+            <Link
+              href="/quote"
+              className="btn-primary hidden py-2.5 text-sm sm:inline-flex"
+            >
               Get a color quote
             </Link>
             <button

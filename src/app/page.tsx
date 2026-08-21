@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Phone } from "lucide-react";
-import { COMPANY, PAGE_H1, SAFE_FINISH_COPY } from "@/lib/copy";
+import { COMPANY, PAGE_H1, SAFE_FINISH_COPY, SWATCH_DISCLAIMER } from "@/lib/copy";
 import { HeroGate, SwatchRow } from "@/components/Swatches";
 import { HardwareViz } from "@/components/HardwareViz";
 
@@ -26,7 +26,7 @@ const merch = [
     href: "/drop-rods",
     kind: "drop-rod" as const,
     title: "Drop rod",
-    body: "A cane bolt in lime (or another accent) against a dark gate is a high-end tell.",
+    body: "A cane bolt in an example lime accent against a dark official-color gate is a high-end tell.",
   },
   {
     href: "/quote",
@@ -51,11 +51,14 @@ const merch = [
 export default function HomePage() {
   return (
     <>
-      <section className="relative overflow-hidden bg-zinc-950">
+      <section className="relative overflow-hidden bg-brand-dark">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-28">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-lime-accent">
-              {COMPANY.name} · Florida · GC #{COMPANY.license}
+            <p className="text-sm font-semibold uppercase tracking-widest text-brand-lime">
+              {COMPANY.wordmark} · Florida · GC #{COMPANY.license}
+            </p>
+            <p className="mt-3 text-lg font-medium text-zinc-200">
+              {COMPANY.tagline}
             </p>
             <h1 className="mt-4 text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
               {PAGE_H1.home}
@@ -65,9 +68,14 @@ export default function HomePage() {
               powder-coat the handles, hinges, or drop rods a different color.
             </p>
             <p className="mt-4 max-w-xl text-zinc-400">
-              High-end / bespoke accent hardware. Stock hopper color or a
-              special-order solid — we quote the coat. This page is color-finish
-              only, not fence installation, not FDT, not a dealer portal.
+              High-end / bespoke accent hardware on official black, bronze, or
+              white — or an example custom accent we quote. This page is
+              color-finish only, not fence installation, not FDT, not a dealer
+              portal.
+            </p>
+            <p className="mt-4 text-sm text-zinc-400">
+              {COMPANY.googleReviews.rating} · {COMPANY.googleReviews.count}{" "}
+              Google Reviews
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link href="/quote" className="btn-primary">
@@ -85,12 +93,11 @@ export default function HomePage() {
 
       <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <h2 className="text-center text-3xl font-bold text-zinc-900">
-            Example colors
+          <h2 className="text-center text-3xl font-bold text-brand-dark">
+            Official aluminum colors
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-zinc-600">
-            Black, bronze, white, and lime are visualization examples — not a
-            stocked RAL catalog. Tell us the color you want on the quote form.
+            {SWATCH_DISCLAIMER} Tell us the color you want on the quote form.
           </p>
           <div className="mt-10">
             <SwatchRow />
@@ -98,9 +105,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-zinc-100 py-16 sm:py-20">
+      <section className="bg-[#eef0f2] py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <h2 className="text-3xl font-bold text-zinc-900">
+          <h2 className="text-3xl font-bold text-brand-dark">
             Merchandising order
           </h2>
           <p className="mt-3 max-w-2xl text-zinc-600">
@@ -122,9 +129,9 @@ export default function HomePage() {
                   kind={item.kind}
                   className="my-3 h-28 w-full"
                 />
-                <h3 className="text-xl font-bold text-zinc-900">{item.title}</h3>
+                <h3 className="text-xl font-bold text-brand-dark">{item.title}</h3>
                 <p className="mt-2 text-sm text-zinc-600">{item.body}</p>
-                <span className="mt-4 inline-flex items-center text-sm font-semibold text-zinc-900">
+                <span className="mt-4 inline-flex items-center text-sm font-semibold text-brand-dark">
                   {item.href === "/quote" ? "Get a color quote" : "View"}
                   <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </span>

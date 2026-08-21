@@ -25,15 +25,15 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="bg-zinc-950 text-white">
+      <section className="bg-brand-dark text-white">
         <div className="mx-auto max-w-5xl px-4 py-14">
           <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
             {PAGE_H1.pricing}
           </h1>
           <p className="mt-4 max-w-2xl text-zinc-300">
             Staff can price stock gate and lineal <strong>COST</strong> without
-            calling {COMPANY.vendor.contact}. Custom / candy / match / wide
-            profile: call {COMPANY.vendor.contact}. {SELL_POLICY}
+            calling {COMPANY.vendorContact}. Custom / candy / match / wide
+            profile: call {COMPANY.vendorContact}. {SELL_POLICY}
           </p>
         </div>
       </section>
@@ -58,8 +58,9 @@ export default function PricingPage() {
                 cut-list sticks, not assembled gates.
               </li>
               <li>
-                New mill-finish ASAP steel blast: {formatUsd(0)} assumed inside
-                COST until Brian says otherwise.
+                New mill-finish blast (vendor COST): {formatUsd(0)} assumed
+                inside COST until {COMPANY.vendorContact} says otherwise. ASAP
+                does not operate a blast booth.
               </li>
             </ul>
           </article>
@@ -71,8 +72,8 @@ export default function PricingPage() {
             </h2>
             <ul className="mt-4 space-y-2 text-sm text-zinc-800">
               <li>
-                Stock hopper / RAL: {formatUsd(PROPOSED_RATES.stockHopperRalAdder)}{" "}
-                adder.
+                Stock hopper color: {formatUsd(PROPOSED_RATES.stockHopperRalAdder)}{" "}
+                adder. Not an ASAP RAL-matching offer.
               </li>
               <li>
                 Tier 1 special-order solid: +

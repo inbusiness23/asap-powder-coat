@@ -75,3 +75,77 @@ describe("public pages do not offer Brian COST as a customer price", () => {
     );
   });
 });
+
+describe("sourced ASAP brand", () => {
+  it("keeps FACT vendor COST at $7 / sq ft and $3 / lf", async () => {
+    const { FACT_RATES } = await import("@/lib/pricing");
+    expect(FACT_RATES.gateStockPerSqft).toBe(7);
+    expect(FACT_RATES.linealStockPerLf).toBe(3);
+    expect(FACT_RATES.isCustomerPrice).toBe(false);
+  });
+
+  it("treats black, bronze, and white as official colors and lime as example custom accent", async () => {
+    const { COLOR_SWATCHES, OFFICIAL_ALUMINUM_COLORS, EXAMPLE_CUSTOM_ACCENT } =
+      await import("@/lib/copy");
+    expect(OFFICIAL_ALUMINUM_COLORS.map((c) => c.id)).toEqual([
+      "black",
+      "bronze",
+      "white",
+    ]);
+    expect(EXAMPLE_CUSTOM_ACCENT.id).toBe("lime");
+    expect(EXAMPLE_CUSTOM_ACCENT.kind).toBe("example-custom-accent");
+    expect(COLOR_SWATCHES[3].kind).toBe("example-custom-accent");
+  });
+
+  it("shows the ASAP SIGNATURE FENCE wordmark and only the sourced phone", async () => {
+    const Navigation = (await import("@/components/Navigation")).default;
+    const Footer = (await import("@/components/Footer")).default;
+    const { COMPANY } = await import("@/lib/copy");
+    const { container } = render(
+      <>
+        <Navigation />
+        <Footer />
+      </>
+    );
+    const text = container.textContent ?? "";
+    expect(text).toContain(COMPANY.wordmark);
+    expect(text).toContain(COMPANY.phoneDisplay);
+    expect(text).toContain(COMPANY.hours);
+    expect(text).toContain(COMPANY.tagline);
+    expect(text).toContain("4.8");
+    expect(text).toContain("460+");
+    expect(text).not.toContain("941-229-1789");
+    expect(text).not.toContain("941-555-1234");
+    expect(text).not.toMatch(/\bCAT\b/);
+    expect(text.toLowerCase()).not.toContain("catpowdercoat");
+  });
+
+  for (const { name, Page } of publicLandings) {
+    it(`${name} stays on-brand and does not co-brand the coating vendor`, () => {
+      const { container } = render(<Page />);
+      const text = container.textContent ?? "";
+      expect(text).not.toMatch(/\bCAT\b/);
+      expect(text.toLowerCase()).not.toContain("catpowdercoat");
+      expect(text).not.toContain("941-229-1789");
+      expect(text).not.toContain("941-555-1234");
+      expect(text.toLowerCase()).not.toContain("marine-grade");
+      expect(text.toLowerCase()).not.toContain("rust-proof");
+      expect(text.toLowerCase()).not.toContain("rustproof");
+      expect(text.toLowerCase()).not.toContain("won't rust");
+      expect(text).not.toMatch(/\$45\s*[–-]\s*\$75/);
+      expect(text.toLowerCase()).not.toContain("we operate a powder plant");
+      expect(text.toLowerCase()).not.toContain("our ovens");
+      if (name === "home" || name === "quote") {
+        expect(text.toLowerCase()).toContain("example custom accent");
+        expect(text.toLowerCase()).toContain("black");
+        expect(text.toLowerCase()).toContain("bronze");
+        expect(text.toLowerCase()).toContain("white");
+      }
+    });
+  }
+
+  it("uses brand dark #171D24 on the home hero", () => {
+    const { container } = render(<HomePage />);
+    expect(container.querySelector(".bg-brand-dark")).not.toBeNull();
+  });
+});

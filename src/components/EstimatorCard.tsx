@@ -161,9 +161,9 @@ export default function EstimatorCard() {
           onChange={(e) => setColorPath(e.target.value as ColorPath)}
           className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm"
         >
-          <option value="stock-hopper">Stock hopper / RAL (Proposed $0 adder)</option>
+          <option value="stock-hopper">Stock hopper color (Proposed $0 adder)</option>
           <option value="tier1-special">Tier 1 special-order solid (Proposed)</option>
-          <option value="custom-match">Custom match — call Brian</option>
+          <option value="custom-match">Custom / candy / two-tone — call Brian</option>
           <option value="candy">Candy — call Brian</option>
           <option value="two-tone">Two-tone — call Brian</option>
         </select>

@@ -44,11 +44,24 @@ Deploy: connect this GitHub repo to [Vercel](https://vercel.com). Leave `NEXT_PU
 
 Do **not** show $7 or $3 on public pages as a customer price, a “starting at” price, or an ad offer. Customer coat pricing is **quote-only** until the captain locks a sell multiplier. This repo does **not** invent that markup.
 
-**Everything else with a dollar sign is Proposed** (industry analog, not Brian, not CAT’s unpublished rates, not a customer sell price). That includes stock-hopper $0 adder, tier-1 special-order adders, color-lot, recoat blast, hardware piece ranges, PC-HW-LOT, and the lime hardware example ≈ $320. Those belong on the staff `/pricing` page, labeled **Proposed**.
+**Everything else with a dollar sign is Proposed** (industry analog, not Brian, not a customer sell price). That includes stock-hopper $0 adder, tier-1 special-order adders, color-lot, recoat blast, hardware piece ranges, PC-HW-LOT, and the lime hardware example ≈ $320. Those belong on the staff `/pricing` page, labeled **Proposed**.
 
-Custom match / candy / two-tone: **call to confirm**. Do not invent Brian’s fee.
+Custom / candy / two-tone: staff calls Brian to confirm. Do not invent Brian’s fee. Do not show a co-brand for the coating vendor on this storefront.
 
 Staff estimator: `/pricing` (clearly labeled internal). It can price stock gate/lineal **COST** without a phone call. It never prints a customer sell price.
+
+## Brand (sourced)
+
+- Identity: **ASAP Fence & Gates**. Wordmark: **ASAP SIGNATURE FENCE**.
+- Phone: **(941) 417-8992** only.
+- Hours: Mon–Fri 8–5, Sat by appointment.
+- Locations: 2219 63rd Avenue East, Bradenton; 2215 Griffin Rd, Leesburg.
+- Voice: “Your fence. Built fast. Built to last.”
+- Reviews (if shown): 4.8 · 460+ Google Reviews. Do not invent a third rating.
+- Financing (if mentioned): **12 months 0% — Wells Fargo & WiseStack** (on the main site). Do not invent other terms.
+- Official aluminum colors: **black, bronze, white**. Lime is an **example custom accent only**, not a stocked catalog.
+- Visual: dark `#171D24` + lime accent. No HOA navy. No coating-vendor branding.
+- Workmanship: 1 year. Not a lifetime powder warranty. ASAP does not operate a powder plant.
 
 ## Quote form
 

@@ -1,4 +1,4 @@
-import { EXAMPLE_SWATCHES } from "@/lib/copy";
+import { COLOR_SWATCHES, EXAMPLE_CUSTOM_ACCENT } from "@/lib/copy";
 
 export type HardwareKind = "handle" | "hinge" | "drop-rod" | "latch" | "frame";
 
@@ -8,7 +8,7 @@ type VizProps = {
   title: string;
 };
 
-const DEFAULT = EXAMPLE_SWATCHES[3].hex;
+const DEFAULT = EXAMPLE_CUSTOM_ACCENT.hex;
 
 export function HandleViz({ color = DEFAULT, className, title }: VizProps) {
   return (
@@ -169,8 +169,8 @@ export function FrameViz({
 }
 
 export function AccentGateViz({
-  frame = EXAMPLE_SWATCHES[0].hex,
-  hardware = EXAMPLE_SWATCHES[3].hex,
+  frame = COLOR_SWATCHES[0].hex,
+  hardware = EXAMPLE_CUSTOM_ACCENT.hex,
   className,
   title,
 }: {

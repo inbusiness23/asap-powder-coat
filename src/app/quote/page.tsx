@@ -8,15 +8,16 @@ export const metadata: Metadata = { title: PAGE_H1.quote };
 export default function QuotePage() {
   return (
     <>
-      <section className="border-b border-zinc-200 bg-zinc-950 text-white">
+      <section className="border-b border-zinc-800 bg-brand-dark text-white">
         <div className="mx-auto max-w-5xl px-4 py-16 text-center">
           <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
             {PAGE_H1.quote}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-zinc-300">
-            Customer coat pricing is quote-only. Tell us the SKU, color, and
-            quantity or dimensions. Custom match, candy, and two-tone are
-            confirmed by phone — not one-click.
+            Customer coat pricing is quote-only. Official aluminum colors are
+            black, bronze, and white. Lime is an example custom accent — not a
+            stocked catalog. Other custom accents are confirmed by phone, not
+            one-click.
           </p>
           <a
             href={`tel:${COMPANY.phoneTel}`}
@@ -39,8 +40,8 @@ export default function QuotePage() {
               <li>1. Your request is stored on this site (no CRM webhook).</li>
               <li>2. We review SKU, color, and size.</li>
               <li>
-                3. Stock hopper vs special-order vs custom match — we confirm
-                before anything is coated.
+                3. Official color vs example custom accent — we confirm before
+                anything is coated.
               </li>
             </ol>
             <p className="mt-6 text-xs text-zinc-500">{SAFE_FINISH_COPY}</p>

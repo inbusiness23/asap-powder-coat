@@ -10,8 +10,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "Custom powder coat — ASAP Fence & Gates",
-    template: "%s | ASAP Fence powder coat",
+    default: "Custom powder coat — ASAP SIGNATURE FENCE",
+    template: "%s | ASAP SIGNATURE FENCE",
   },
   description:
     "Custom powder-coat and color-finish for ASAP Fence gates, frames, and hardware in Florida. Accent a handle or hinge without recoating the whole gate. Get a color quote.",

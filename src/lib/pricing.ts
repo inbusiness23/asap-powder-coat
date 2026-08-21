@@ -13,8 +13,9 @@ export const PRICE_ROLE = {
 export type PriceRole = (typeof PRICE_ROLE)[keyof typeof PRICE_ROLE];
 
 /**
- * Brian / CAT locked vendor COST to ASAP. Not a customer price, not a
+ * Brian locked vendor COST to ASAP. Not a customer price, not a
  * starting-at, not an ad offer. Do not change without Brian.
+ * Fulfillment is vendor-only — not a public co-brand.
  * Sell markup is not invented — customer coat price = request a quote
  * until the captain locks a multiplier.
  */
@@ -32,7 +33,7 @@ export const FACT_RATES = {
 
 /**
  * Industry-analog numbers. Not Brian. Must display as Proposed.
- * These are not CAT published rates and are not customer sell prices.
+ * These are not unpublished vendor rates and are not customer sell prices.
  */
 export const PROPOSED_RATES = {
   stockHopperRalAdder: 0,
@@ -344,7 +345,7 @@ export function estimateStockJob(input: EstimatorInput): EstimatorResult {
 
   const notes = [
     `COST (Brian) ${FACT_RATES.gateSku} at $${FACT_RATES.gateStockPerSqft.toFixed(2)} / sq ft vendor cost. Envelope is W × H. Picket gaps are not subtracted. Both faces are not doubled. Not a customer price.`,
-    "New mill-finish ASAP steel blast is $0 assumed inside COST (FACT) until Brian says otherwise.",
+    "New mill-finish blast is $0 assumed inside COST (FACT) until Brian says otherwise. ASAP does not operate a blast booth.",
     sellNote,
   ];
 

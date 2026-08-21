@@ -5,7 +5,7 @@ import { submitQuote, type QuoteActionState } from "@/app/quote/actions";
 import { COMPANY } from "@/lib/copy";
 
 const fieldClass =
-  "w-full rounded-lg border border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 transition-colors focus:border-lime-accent focus:outline-none focus:ring-2 focus:ring-lime-accent/40";
+  "w-full rounded-lg border border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 transition-colors focus:border-brand-lime focus:outline-none focus:ring-2 focus:ring-brand-lime/40";
 
 export default function QuoteForm() {
   const [state, setState] = useState<QuoteActionState>({ ok: false });
@@ -186,13 +186,15 @@ export default function QuoteForm() {
             <option value="" disabled>
               Select…
             </option>
-            <option value="stock-black">Stock example: black</option>
-            <option value="stock-bronze">Stock example: bronze</option>
-            <option value="stock-white">Stock example: white</option>
-            <option value="special-lime">Special-order example: lime</option>
-            <option value="custom-match">Custom match — call to confirm</option>
-            <option value="candy">Candy — call to confirm</option>
-            <option value="two-tone">Two-tone — call to confirm</option>
+            <option value="official-black">Official aluminum: black</option>
+            <option value="official-bronze">Official aluminum: bronze</option>
+            <option value="official-white">Official aluminum: white</option>
+            <option value="example-lime">
+              Lime — example custom accent, not stocked
+            </option>
+            <option value="other-custom">
+              Other custom accent — call to confirm
+            </option>
           </select>
         </div>
       </div>
@@ -231,9 +233,10 @@ export default function QuoteForm() {
       </div>
 
       <p className="text-xs text-zinc-500">
-        Custom match, candy, and two-tone are not one-click. We will call to
-        confirm. Full-gate custom color is a quote path, not an add-to-cart
-        purchase. Customer coat pricing is quote-only.
+        Official colors are black, bronze, and white. Lime is an example custom
+        accent, not a stocked catalog. Other custom accents and full-gate custom
+        color are a quote path, not add-to-cart. Customer coat pricing is
+        quote-only.
       </p>
 
       <button
