@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { storeQuote, QuotePersistError } from "@/lib/quotes";
+import { deliverPowderCoatLead } from "@/lib/asap-lead";
 import { submitQuote } from "@/app/quote/actions";
 import { QUOTE_FIELD_MAX, QUOTE_MAX_PAYLOAD_CHARS } from "@/lib/quote-options";
 
-vi.mock("@/lib/quotes", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/quotes")>(
-    "@/lib/quotes"
+vi.mock("@/lib/asap-lead", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/asap-lead")>(
+    "@/lib/asap-lead"
   );
   return {
     ...actual,
-    storeQuote: vi.fn(),
+    deliverPowderCoatLead: vi.fn(),
   };
 });
 
-const storeQuoteMock = vi.mocked(storeQuote);
+const deliverMock = vi.mocked(deliverPowderCoatLead);
 
 function form(fields: Record<string, string>): FormData {
   const data = new FormData();
@@ -36,7 +36,7 @@ const valid = {
 
 describe("submitQuote hardening", () => {
   beforeEach(() => {
-    storeQuoteMock.mockReset();
+    deliverMock.mockReset();
   });
 
   it("rejects unknown sku and color", async () => {
@@ -49,7 +49,7 @@ describe("submitQuote hardening", () => {
       ok: false,
       error: expect.stringMatching(/color/i),
     });
-    expect(storeQuoteMock).not.toHaveBeenCalled();
+    expect(deliverMock).not.toHaveBeenCalled();
   });
 
   it("rejects oversized fields and payloads", async () => {
@@ -65,7 +65,7 @@ describe("submitQuote hardening", () => {
       ok: false,
       error: expect.stringMatching(/too large/i),
     });
-    expect(storeQuoteMock).not.toHaveBeenCalled();
+    expect(deliverMock).not.toHaveBeenCalled();
   });
 
   it("rejects unexpected fields", async () => {
@@ -77,36 +77,23 @@ describe("submitQuote hardening", () => {
     });
   });
 
-  it("returns ok:false when persist cannot store durably", async () => {
-    storeQuoteMock.mockRejectedValue(new QuotePersistError());
+  it("returns ok:false when both locked ASAP endpoints reject", async () => {
+    deliverMock.mockResolvedValue({ ok: false });
     const result = await submitQuote(form(valid));
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/could not store/i);
     expect(result.id).toBeUndefined();
   });
 
-  it("returns ok:true only after storeQuote succeeds", async () => {
-    storeQuoteMock.mockResolvedValue({
-      ...valid,
-      id: "abc-123",
-      createdAt: "2026-08-21T00:00:00.000Z",
+  it("returns ok:true only after the locked lead path succeeds", async () => {
+    deliverMock.mockResolvedValue({
+      ok: true,
+      id: "lp-123",
+      via: "lp-lead",
     });
     await expect(submitQuote(form(valid))).resolves.toEqual({
       ok: true,
-      id: "abc-123",
+      id: "lp-123",
     });
-  });
-
-  it("does not POST quotes to GHL or asapfenceandgate.com APIs", async () => {
-    const fetchSpy = vi.fn();
-    vi.stubGlobal("fetch", fetchSpy);
-    storeQuoteMock.mockResolvedValue({
-      ...valid,
-      id: "abc-123",
-      createdAt: "2026-08-21T00:00:00.000Z",
-    });
-    await submitQuote(form(valid));
-    expect(fetchSpy).not.toHaveBeenCalled();
-    vi.unstubAllGlobals();
   });
 });

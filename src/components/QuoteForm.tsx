@@ -43,10 +43,10 @@ export default function QuoteForm() {
         className="rounded-xl border border-green-200 bg-green-50 p-8 text-center"
         data-testid="quote-success"
       >
-        <h2 className="text-2xl font-bold text-zinc-900">Quote request saved</h2>
+        <h2 className="text-2xl font-bold text-zinc-900">Quote request sent</h2>
         <p className="mt-3 text-zinc-600">
-          We stored your request (no CRM webhook). Someone from{" "}
-          {COMPANY.shortName} will follow up. Need it faster? Call{" "}
+          We received your request. Someone from {COMPANY.shortName} will
+          follow up. Need it faster? Call{" "}
           <a
             href={`tel:${COMPANY.phoneTel}`}
             className="font-semibold text-zinc-900 underline"

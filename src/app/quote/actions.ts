@@ -1,6 +1,7 @@
 "use server";
 
-import { storeQuote, QuotePersistError } from "@/lib/quotes";
+import { headers } from "next/headers";
+import { deliverPowderCoatLead } from "@/lib/asap-lead";
 import {
   QUOTE_ALLOWED_KEYS,
   QUOTE_COLORS,
@@ -35,6 +36,25 @@ function isSku(value: string): value is (typeof QUOTE_SKUS)[number] {
 
 function isColor(value: string): value is (typeof QUOTE_COLORS)[number] {
   return (QUOTE_COLORS as readonly string[]).includes(value);
+}
+
+function requestContext(): {
+  landing_url: string;
+  referrer: string;
+  user_agent: string;
+} {
+  try {
+    const h = headers();
+    const host = h.get("x-forwarded-host") || h.get("host") || "";
+    const proto = h.get("x-forwarded-proto") || "https";
+    return {
+      landing_url: host ? `${proto}://${host}/quote` : "",
+      referrer: h.get("referer") || "",
+      user_agent: h.get("user-agent") || "",
+    };
+  } catch {
+    return { landing_url: "", referrer: "", user_agent: "" };
+  }
 }
 
 export async function submitQuote(
@@ -97,25 +117,17 @@ export async function submitQuote(
     return { ok: false, error: "Please choose a color from the list." };
   }
 
-  try {
-    // Fail-closed local persist only. No GHL, no asapfenceandgate.com
-    // APIs, no FDT webhook — those were not publicly verified.
-    const saved = await storeQuote({
-      name,
-      phone,
-      email,
-      address,
-      sku,
-      color,
-      quantity,
-      dimensions,
-    });
-    return { ok: true, id: saved.id };
-  } catch (error) {
-    const message =
-      error instanceof QuotePersistError
-        ? error.message
-        : "We could not store this request. Please call us instead.";
-    return { ok: false, error: message };
+  const delivered = await deliverPowderCoatLead(
+    { name, phone, email, address, sku, color, quantity, dimensions },
+    requestContext()
+  );
+
+  if (!delivered.ok) {
+    return {
+      ok: false,
+      error: "We could not store this request. Please call us instead.",
+    };
   }
+
+  return { ok: true, id: delivered.id };
 }

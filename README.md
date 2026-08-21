@@ -77,4 +77,9 @@ Do **not** put these numbers on `/`, `/hinges`, `/drop-rods`, `/handles`, `/fram
 
 ## Quote form
 
-`/quote` saves submissions with a server action to `data/quotes.json` only when that write is durable and can be read back. If the host cannot persist (typical on Vercel’s read-only filesystem), the form shows a failure (`ok: false`) and does **not** claim ASAP will follow up. There is no CRM, GoHighLevel, or email webhook. This app does **not** POST quotes to asapfenceandgate.com APIs or to any FDT GHL URL.
+`/quote` sends submissions on the locked ASAP lead path (not GHL, not `/api/book/estimate`, not FDT):
+
+1. `POST https://asapfenceandgate.com/api/lp/lead` with `service` / `service_type` / `lp_slug` = `powder-coat` and `source` = `powder-coat` (retry once with `source` `website-lp` if that value is rejected).
+2. Fallback: `POST https://asapfenceandgate.com/api/contact` with `source` `powder-coat`, then `website-contact-form` if needed.
+
+If both reject, the form shows a failure (`ok: false`) and does **not** claim ASAP will follow up. Local disk is not treated as a successful store. Do not invent extra API keys.

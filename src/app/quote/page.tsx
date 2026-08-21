@@ -38,8 +38,8 @@ export default function QuotePage() {
             <h2 className="font-bold text-zinc-900">What happens next</h2>
             <ol className="mt-4 space-y-3 text-sm text-zinc-600">
               <li>
-                1. We try to save your request on this site. If that fails, you
-                will see an error — please call. There is no CRM webhook.
+                1. We send your request to ASAP. If that fails, you will see an
+                error — please call.
               </li>
               <li>2. We review SKU, color, and size.</li>
               <li>
