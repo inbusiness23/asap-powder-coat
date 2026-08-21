@@ -181,14 +181,22 @@ export default function EstimatorCard() {
 
       <div className="mt-6 rounded-xl bg-zinc-50 p-4" data-testid="estimator-result">
         {result.callBrian ? (
-          <p className="text-lg font-bold text-zinc-900">
-            {CALL_BRIAN}
-            {result.callBrianReason ? (
-              <span className="ml-2 text-sm font-normal text-zinc-600">
-                ({result.callBrianReason})
+          <div>
+            <p className="text-lg font-bold text-zinc-900">
+              {CALL_BRIAN}
+              {result.callBrianReason ? (
+                <span className="ml-2 text-sm font-normal text-zinc-600">
+                  ({result.callBrianReason})
+                </span>
+              ) : null}
+            </p>
+            <p className="mt-2 text-sm text-zinc-700">
+              Proposed sell:{" "}
+              <span data-testid="estimator-sell-price">
+                {result.proposedSell.display}
               </span>
-            ) : null}
-          </p>
+            </p>
+          </div>
         ) : (
           <dl className="space-y-2 text-sm">
             {result.stockCoatCost ? (
@@ -259,9 +267,16 @@ export default function EstimatorCard() {
                 </dd>
               </div>
             ) : null}
-            <div className="flex justify-between gap-4 text-zinc-500">
-              <dt>Customer sell price</dt>
-              <dd data-testid="estimator-sell-price">Not set — request quote</dd>
+            <div className="flex justify-between gap-4 text-zinc-700">
+              <dt>
+                Proposed sell{" "}
+                <span className="label-proposed">
+                  {result.proposedSell.label}
+                </span>
+              </dt>
+              <dd data-testid="estimator-sell-price">
+                {result.proposedSell.display}
+              </dd>
             </div>
           </dl>
         )}

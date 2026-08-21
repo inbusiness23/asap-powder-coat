@@ -71,8 +71,14 @@ describe("public pages do not offer Brian COST as a customer price", () => {
     expect(text).toMatch(/vendor cost/i);
     expect(text).not.toMatch(/starting at \$7/i);
     expect(screen.getByTestId("estimator-sell-price").textContent).toMatch(
-      /request quote/i
+      /Proposed — quote/i
     );
+    expect(screen.getByTestId("cost-vs-sell")).toBeInTheDocument();
+    expect(screen.getByTestId("proposed-sell-display").textContent).toBe(
+      "Proposed — quote"
+    );
+    expect(text.toLowerCase()).toMatch(/premium/);
+    expect(text).not.toMatch(/starting at \$7/i);
   });
 });
 

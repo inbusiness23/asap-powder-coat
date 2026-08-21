@@ -62,6 +62,32 @@ export const CALL_BRIAN = "Call Brian" as const;
 export const SELL_POLICY =
   "Sell = request quote until the captain locks a multiplier. Do not invent a customer coat price.";
 
+/** Display string for unlocked sell. No fake dollars. */
+export const PROPOSED_SELL_DISPLAY = "Proposed — quote" as const;
+
+export const SELL_INTENT =
+  "Premium / bespoke — as much as we can. Not a cheap COST pass-through. Do not show $7 or $3 as a customer price.";
+
+export type ProposedSellPlaceholder = {
+  display: typeof PROPOSED_SELL_DISPLAY;
+  dollars: null;
+  label: typeof PRICE_LABEL.PROPOSED;
+  intent: typeof SELL_INTENT;
+  isCustomerPrice: false;
+  locked: false;
+};
+
+export function proposedSellPlaceholder(): ProposedSellPlaceholder {
+  return {
+    display: PROPOSED_SELL_DISPLAY,
+    dollars: null,
+    label: PRICE_LABEL.PROPOSED,
+    intent: SELL_INTENT,
+    isCustomerPrice: false,
+    locked: false,
+  };
+}
+
 export type LengthUnit = "ft" | "in";
 
 export function roundMoney(amount: number): number {
@@ -250,20 +276,24 @@ export type EstimatorResult = {
   recoatBlast?: LabeledAmount;
   vendorCostTotal?: LabeledAmount;
   customerSellPrice: null;
+  proposedSell: ProposedSellPlaceholder;
   notes: string[];
 };
 
 export function estimateStockJob(input: EstimatorInput): EstimatorResult {
   const sellNote = SELL_POLICY;
+  const proposedSell = proposedSellPlaceholder();
 
   if (colorPathNeedsBrian(input.colorPath)) {
     return {
       callBrian: true,
       callBrianReason: "custom-match / candy / two-tone",
       customerSellPrice: null,
+      proposedSell,
       notes: [
         "Custom match, candy, or two-tone on one weldment: call to confirm. Do not one-click. We do not publish Brian's fee.",
         sellNote,
+        proposedSell.intent,
       ],
     };
   }
@@ -278,6 +308,7 @@ export function estimateStockJob(input: EstimatorInput): EstimatorResult {
         callBrian: true,
         callBrianReason: "wide-profile",
         customerSellPrice: null,
+        proposedSell,
         notes: [
           `Widest side over ${FACT_RATES.linealMaxWidestInches} in: ${CALL_BRIAN}.`,
           sellNote,
@@ -303,6 +334,7 @@ export function estimateStockJob(input: EstimatorInput): EstimatorResult {
         callBrianReason: "lineal-recoat",
         stockCoatCost: lineal,
         customerSellPrice: null,
+        proposedSell,
         notes,
       };
     }
@@ -324,6 +356,7 @@ export function estimateStockJob(input: EstimatorInput): EstimatorResult {
         isCustomerPrice: false,
       },
       customerSellPrice: null,
+      proposedSell,
       notes,
     };
   }
@@ -366,6 +399,7 @@ export function estimateStockJob(input: EstimatorInput): EstimatorResult {
       isCustomerPrice: false,
     },
     customerSellPrice: null,
+    proposedSell,
     notes,
   };
 }

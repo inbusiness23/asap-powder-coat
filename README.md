@@ -48,7 +48,9 @@ Do **not** show $7 or $3 on public pages as a customer price, a “starting at�
 
 Custom / candy / two-tone: staff calls Brian to confirm. Do not invent Brian’s fee. Do not show a co-brand for the coating vendor on this storefront.
 
-Staff estimator: `/pricing` (clearly labeled internal). It can price stock gate/lineal **COST** without a phone call. It never prints a customer sell price.
+Staff estimator: `/pricing` (clearly labeled internal). It can price stock gate/lineal **COST** without a phone call.
+
+**Proposed sell (staff only):** until the captain locks a researched sell menu, sell is **Proposed — quote**. No invented markup dollars. Intent is premium / bespoke, not a cheap $7 customer price. That comparison lives on `/pricing`, not on the ad hero.
 
 ## Brand (sourced)
 

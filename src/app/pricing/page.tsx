@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import EstimatorCard from "@/components/EstimatorCard";
+import CostVsSellPlaceholder from "@/components/CostVsSellPlaceholder";
 import { COMPANY, PAGE_H1, SAFE_FINISH_COPY } from "@/lib/copy";
 import {
   FACT_RATES,
@@ -99,6 +100,8 @@ export default function PricingPage() {
         </div>
 
         <EstimatorCard />
+
+        <CostVsSellPlaceholder />
 
         <p className="text-sm text-zinc-500">{SAFE_FINISH_COPY}</p>
         <Link href="/quote" className="btn-dark">

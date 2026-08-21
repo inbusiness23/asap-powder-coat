@@ -9,6 +9,7 @@ import {
   proposedLimeHardwareExample,
   proposedMillFinishBlast,
   proposedRecoatBlast,
+  proposedSellPlaceholder,
   proposedStockHopperAdder,
   proposedTier1SpecialOrderAdder,
   stockGateCoatCost,
@@ -67,6 +68,9 @@ describe("FACT rates are vendor COST, not customer price", () => {
       recoat: false,
     });
     expect(result.customerSellPrice).toBeNull();
+    expect(result.proposedSell.display).toBe("Proposed — quote");
+    expect(result.proposedSell.dollars).toBeNull();
+    expect(result.proposedSell.locked).toBe(false);
     expect(result.vendorCostTotal?.amount).toBe(168);
     expect(result.vendorCostTotal?.label).toBe(PRICE_LABEL.COST);
     expect(result.vendorCostTotal?.isCustomerPrice).toBe(false);
@@ -103,6 +107,19 @@ describe("FACT rates are vendor COST, not customer price", () => {
       label: PRICE_LABEL.COST,
       isCustomerPrice: false,
     });
+  });
+});
+
+describe("proposed sell placeholder", () => {
+  it("does not invent sell dollars until the captain locks a formula", () => {
+    const sell = proposedSellPlaceholder();
+    expect(sell.display).toBe("Proposed — quote");
+    expect(sell.dollars).toBeNull();
+    expect(sell.label).toBe(PRICE_LABEL.PROPOSED);
+    expect(sell.isCustomerPrice).toBe(false);
+    expect(sell.locked).toBe(false);
+    expect(sell.intent.toLowerCase()).toMatch(/premium/);
+    expect(sell.intent.toLowerCase()).toMatch(/bespoke/);
   });
 });
 
